@@ -4,7 +4,7 @@
 define('DB_HOST', '127.0.0.1');
 define('DB_USER', 'root');
 define('DB_PASS', '');
-define('DB_NAME', 'e_arsip');
+define('DB_NAME', 'simpeg');
 
 // Atur Timezone Indonesia (WITA +08:00 / Asia/Makassar)
 date_default_timezone_set('Asia/Makassar');
@@ -24,13 +24,13 @@ function get_base_url() {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $port == 443) ? "https://" : "http://";
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
-    // Tentukan root aplikasi (folder e_arsip)
+    // Tentukan root aplikasi (folder simpeg)
     $script_dir = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '';
 
-    // Cari posisi /e_arsip/ lalu ambil sampai situ saja
-    if (preg_match('#^(/[^/]+/e_arsip)#', $script_dir, $m)) {
+    // Cari posisi /simpeg/ lalu ambil sampai situ saja
+    if (preg_match('#^(/[^/]+/simpeg)#', $script_dir, $m)) {
         $base_path = $m[1];
-    } elseif (preg_match('#^(/e_arsip)#', $script_dir, $m)) {
+    } elseif (preg_match('#^(/simpeg)#', $script_dir, $m)) {
         $base_path = $m[1];
     } else {
         // Fallback: naik dari /public ke parent

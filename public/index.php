@@ -26,8 +26,8 @@ function resolve_page(): string {
     $request_uri = $_SERVER['REQUEST_URI'] ?? '/';
     $path = strtok($request_uri, '?');
     
-    // Hapus base directory /e_arsip (dan opsional /public atau /index.php)
-    $path = preg_replace('#^/e_arsip(?:/public)?(?:/index\.php)?#i', '', $path);
+    // Hapus base directory /simpeg, /e_arsip, /public, atau /index.php jika ada
+    $path = preg_replace('#^/(?:simpeg|e_arsip)?(?:/public)?(?:/index\.php)?#i', '', $path);
     $path = trim($path, '/');
 
     // Robustness: jika path mengandung & (misal: pegawai_save&id=2), pisahkan & dan masukkan ke $_GET

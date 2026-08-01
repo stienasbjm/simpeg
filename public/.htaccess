@@ -1,9 +1,9 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /e_arsip/public/
+    RewriteBase /simpeg/public/
 
     # Blokir akses langsung ke file .php (kecuali index.php & portal.php)
-    RewriteCond %{THE_REQUEST} \s/e_arsip/public/(?!index\.php|portal\.php)[^?\s]*\.php [NC]
+    RewriteCond %{THE_REQUEST} \s/simpeg/public/(?!index\.php|portal\.php)[^?\s]*\.php [NC]
     RewriteRule ^ - [F,L]
 
     # Jika bukan file/folder nyata, arahkan ke index.php

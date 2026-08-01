@@ -1,6 +1,6 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /e_arsip/
+    RewriteBase /simpeg/
 
     # Jika request adalah file atau folder nyata, biarkan lewat
     RewriteCond %{REQUEST_FILENAME} !-f
