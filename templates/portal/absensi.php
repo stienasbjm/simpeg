@@ -56,9 +56,17 @@ $status_izin_lbl   = ['menunggu'=>'Menunggu','disetujui'=>'Disetujui','ditolak'=
 <div class="e-card" style="margin-bottom:1.5rem;">
   <div class="e-card-body" style="padding:2rem;">
     <div style="text-align:center;margin-bottom:1.5rem;">
-      <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a78bfa);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;margin:0 auto .875rem;box-shadow:0 6px 20px rgba(99,102,241,.35);">
-        <?php echo strtoupper(substr($pegawai['nama'], 0, 1)); ?>
-      </div>
+      <?php
+      $has_foto_abs = !empty($pegawai['foto']) && file_exists(__DIR__ . '/../../public/uploads/foto/' . $pegawai['foto']);
+      if ($has_foto_abs):
+      ?>
+        <img src="<?php echo BASE_URL . 'public/uploads/foto/' . htmlspecialchars($pegawai['foto']); ?>" alt="Foto"
+             style="width:64px;height:64px;border-radius:50%;object-fit:cover;margin:0 auto .875rem;box-shadow:0 6px 20px rgba(99,102,241,.35);border:2px solid var(--indigo);">
+      <?php else: ?>
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#a78bfa);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;margin:0 auto .875rem;box-shadow:0 6px 20px rgba(99,102,241,.35);">
+          <?php echo strtoupper(substr($pegawai['nama'], 0, 1)); ?>
+        </div>
+      <?php endif; ?>
       <div style="font-weight:800;font-size:1.05rem;color:var(--text-primary);"><?php echo htmlspecialchars($pegawai['nama']); ?></div>
       <div style="font-size:.8rem;color:var(--text-muted);margin-top:.2rem;"><?php echo htmlspecialchars($pegawai['kepangkatan']); ?></div>
     </div>
