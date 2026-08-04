@@ -80,6 +80,7 @@ $action_routes = [
     'akun_pegawai_delete'=> '/../src/modules/akun_pegawai_delete.php',
     'absensi_save'      => '/../src/modules/absensi_save.php',
     'absensi_export'    => '/../src/modules/absensi_export.php',
+    'izin_save'         => '/../src/modules/izin_save.php',
     'akun_admin_save'   => '/../src/modules/akun_admin_save.php',
     'akun_admin_delete' => '/../src/modules/akun_admin_delete.php',
     'kas_save'          => '/../src/modules/kas_save.php',
@@ -106,7 +107,7 @@ if (in_array($page, $no_layout_pages)) {
 }
 
 // ─── Portal Pegawai Handler ─────────────────────────────────────────────────
-$portal_pages = ['portal', 'profil', 'absensi_action', 'profil_save'];
+$portal_pages = ['portal', 'profil', 'absensi_action', 'profil_save', 'izin_save'];
 if (in_array($page, $portal_pages)) {
     include __DIR__ . '/portal.php';
     exit();

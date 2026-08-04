@@ -3,6 +3,7 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../src/auth/auth.php';
 require_once __DIR__ . '/../src/modules/absensi_functions.php';
 require_once __DIR__ . '/../src/modules/pegawai_functions.php';
+require_once __DIR__ . '/../src/modules/izin_functions.php';
 require_admin();
 $bulan      = (int)($_GET['bulan'] ?? date('n'));
 $tahun      = (int)($_GET['tahun'] ?? date('Y'));
@@ -15,6 +16,13 @@ $all_peg    = get_all_pegawai($conn);
 $nama_bulan = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',
                7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
 $tahun_opts = range(2020, 2035);
+
+$pengajuan_list = get_all_pengajuan_izin($conn);
+$pending_count  = count(array_filter($pengajuan_list, fn($i) => $i['status'] === 'menunggu'));
+
+$jenis_izin_lbl    = ['izin'=>'Izin','sakit'=>'Sakit','dinas'=>'Dinas Luar'];
+$jenis_izin_badge  = ['izin'=>'blue','sakit'=>'amber','dinas'=>'purple'];
+$status_izin_badge = ['menunggu'=>'indigo','disetujui'=>'green','ditolak'=>'red'];
 
 // Hitung total akumulasi hadir & total uang makan seluruh pegawai
 $total_hadir_semua = 0;
@@ -108,6 +116,97 @@ $total_uang_makan_semua = $total_hadir_semua * $uang_makan;
         <div style="font-size:1.5rem;font-weight:900;color:var(--purple);margin-top:.2rem;">Rp <?php echo number_format($total_uang_makan_semua, 0, ',', '.'); ?></div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Pengajuan Izin / Sakit / Dinas (Admin Approval) -->
+<div class="e-card" style="margin-bottom:1.5rem;">
+  <div class="e-card-header" style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;">
+    <div class="e-card-title" style="margin:0;">
+      <i class="bi bi-file-earmark-medical-fill" style="color:var(--blue);"></i>
+      Pengajuan Izin / Sakit / Dinas Pegawai
+      <?php if ($pending_count > 0): ?>
+      <span class="e-badge red" style="margin-left:.5rem;"><?php echo $pending_count; ?> Menunggu</span>
+      <?php endif; ?>
+    </div>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="e-table">
+      <thead><tr>
+        <th>Tanggal</th>
+        <th>Pegawai</th>
+        <th>Jenis</th>
+        <th>Keterangan</th>
+        <th>Bukti</th>
+        <th>Status</th>
+        <th style="text-align:right;">Aksi</th>
+      </tr></thead>
+      <tbody>
+        <?php if (!empty($pengajuan_list)): foreach ($pengajuan_list as $iz):
+          $jbadge = $jenis_izin_badge[$iz['jenis']]  ?? 'indigo';
+          $sbadge = $status_izin_badge[$iz['status']] ?? 'indigo';
+        ?>
+        <tr>
+          <td style="font-weight:700;white-space:nowrap;">
+            <?php echo date('d M Y', strtotime($iz['tanggal'])); ?>
+          </td>
+          <td>
+            <div style="font-weight:700;"><?php echo htmlspecialchars($iz['nama']); ?></div>
+            <div style="font-size:.72rem;color:var(--text-muted);"><?php echo htmlspecialchars($iz['nip']); ?></div>
+          </td>
+          <td>
+            <span class="e-badge <?php echo $jbadge; ?>">
+              <?php echo $jenis_izin_lbl[$iz['jenis']] ?? $iz['jenis']; ?>
+            </span>
+          </td>
+          <td style="font-size:.82rem;max-width:220px;">
+            <?php echo htmlspecialchars($iz['keterangan'] ?? '—'); ?>
+          </td>
+          <td style="text-align:center;">
+            <?php if (!empty($iz['file_bukti'])): ?>
+              <a href="<?php echo BASE_URL . 'public/uploads/izin/' . htmlspecialchars($iz['file_bukti']); ?>"
+                 target="_blank" class="e-btn" style="padding:.25rem .6rem;font-size:.75rem;">
+                <i class="bi bi-paperclip"></i> Bukti
+              </a>
+            <?php else: ?>
+              <span style="color:var(--text-faint);font-size:.8rem;">—</span>
+            <?php endif; ?>
+          </td>
+          <td>
+            <span class="e-badge <?php echo $sbadge; ?>">
+              <?php echo ucfirst($iz['status']); ?>
+            </span>
+          </td>
+          <td style="text-align:right;">
+            <?php if ($iz['status'] === 'menunggu'): ?>
+              <!-- Form Setujui -->
+              <form method="POST" action="<?php echo BASE_URL; ?>izin_save" style="display:inline-block;">
+                <?php echo csrf_field(); ?>
+                <input type="hidden" name="action" value="approve_izin">
+                <input type="hidden" name="id" value="<?php echo $iz['id']; ?>">
+                <button type="submit" class="e-btn" style="padding:.25rem .6rem;font-size:.75rem;background:var(--green);color:#fff;border-color:var(--green);" onclick="return confirm('Setujui pengajuan izin/sakit ini?')">
+                  <i class="bi bi-check-lg"></i> Setujui
+                </button>
+              </form>
+              <!-- Form Tolak -->
+              <form method="POST" action="<?php echo BASE_URL; ?>izin_save" style="display:inline-block;">
+                <?php echo csrf_field(); ?>
+                <input type="hidden" name="action" value="tolak_izin">
+                <input type="hidden" name="id" value="<?php echo $iz['id']; ?>">
+                <button type="submit" class="e-btn" style="padding:.25rem .6rem;font-size:.75rem;background:var(--red);color:#fff;border-color:var(--red);" onclick="return confirm('Tolak pengajuan ini?')">
+                  <i class="bi bi-x-lg"></i> Tolak
+                </button>
+              </form>
+            <?php else: ?>
+              <span style="font-size:.78rem;color:var(--text-muted);">Selesai</span>
+            <?php endif; ?>
+          </td>
+        </tr>
+        <?php endforeach; else: ?>
+        <tr><td colspan="7"><div class="e-empty"><i class="bi bi-inbox e-empty-icon"></i><p>Belum ada pengajuan izin/sakit/dinas pegawai.</p></div></td></tr>
+        <?php endif; ?>
+      </tbody>
+    </table>
   </div>
 </div>
 

@@ -27,6 +27,10 @@ if ($page_name === 'profil_save' || $page === 'profil_save') {
     include __DIR__ . '/../src/modules/profil_save.php';
     exit();
 }
+if ($page_name === 'izin_save' || $page === 'izin_save') {
+    include __DIR__ . '/../src/modules/izin_save.php';
+    exit();
+}
 
 $allowed = ['absensi', 'profil'];
 if (!in_array($page, $allowed)) $page = 'absensi';
