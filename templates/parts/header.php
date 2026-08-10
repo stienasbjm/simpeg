@@ -30,6 +30,13 @@ $is_keuangan_active = in_array($current, $keuangan_matches);
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SIMPEG System — STIE Nasional Banjarmasin</title>
   <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>public/images/favicon.png">
+  <script>
+    (function() {
+      if (window.innerWidth >= 992 && localStorage.getItem('earsip-sidebar-collapsed') === 'true') {
+        document.documentElement.classList.add('sidebar-collapsed');
+      }
+    })();
+  </script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="<?php echo BASE_URL; ?>public/css/style.css">

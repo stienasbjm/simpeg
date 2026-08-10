@@ -249,7 +249,7 @@ body {
   border: 1px solid var(--border-light);
   background: var(--bg-card);
   color: var(--text-muted);
-  display: none;
+  display: flex;
   align-items: center; justify-content: center;
   cursor: pointer;
   font-size: 1.05rem;
@@ -570,6 +570,20 @@ body {
   padding: 2rem 2.25rem 3.5rem;
   min-height: calc(100vh - var(--topbar-height));
   transition: margin-left var(--dur-slow) var(--ease);
+}
+
+/* Desktop Collapsed Sidebar State */
+@media (min-width: 992px) {
+  body.sidebar-collapsed .e-sidebar,
+  html.sidebar-collapsed body .e-sidebar {
+    transform: translateX(-100%);
+    box-shadow: none;
+  }
+
+  body.sidebar-collapsed .e-main,
+  html.sidebar-collapsed body .e-main {
+    margin-left: 0;
+  }
 }
 
 /* =============================================================================
@@ -1992,7 +2006,6 @@ input[type="password"].e-input-field,
    25. RESPONSIVE
    ============================================================================= */
 @media (max-width: 991.98px) {
-  .e-menu-btn    { display: flex; }
   .e-brand       { min-width: auto; }
   .e-user-name, .e-user-role { display: none; }
 

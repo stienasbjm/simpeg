@@ -41,32 +41,53 @@
       });
     }
 
-    /* ── Sidebar (mobile) ────────────────────────────────────── */
+    /* ── Sidebar (Mobile & Desktop Toggle) ───────────────────── */
     const menuBtn = document.getElementById('menuBtn');
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
+    const SIDEBAR_KEY = 'earsip-sidebar-collapsed';
 
-    function openSidebar() {
+    // Apply initial state to body if saved
+    if (innerWidth >= 992 && localStorage.getItem(SIDEBAR_KEY) === 'true') {
+      document.body.classList.add('sidebar-collapsed');
+      document.documentElement.classList.add('sidebar-collapsed');
+    }
+
+    function openMobileSidebar() {
       sidebar && sidebar.classList.add('is-open');
       overlay && overlay.classList.add('is-open');
       document.body.style.overflow = 'hidden';
     }
 
-    function closeSidebar() {
+    function closeMobileSidebar() {
       sidebar && sidebar.classList.remove('is-open');
       overlay && overlay.classList.remove('is-open');
       document.body.style.overflow = '';
     }
 
-    menuBtn && menuBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      sidebar && sidebar.classList.contains('is-open') ? closeSidebar() : openSidebar();
-    });
+    function toggleDesktopSidebar() {
+      const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+      document.documentElement.classList.toggle('sidebar-collapsed', isCollapsed);
+      localStorage.setItem(SIDEBAR_KEY, isCollapsed ? 'true' : 'false');
+    }
 
-    overlay && overlay.addEventListener('click', closeSidebar);
+    if (menuBtn) {
+      menuBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (window.innerWidth < 992) {
+          sidebar && sidebar.classList.contains('is-open') ? closeMobileSidebar() : openMobileSidebar();
+        } else {
+          toggleDesktopSidebar();
+        }
+      });
+    }
+
+    overlay && overlay.addEventListener('click', closeMobileSidebar);
 
     window.addEventListener('resize', function () {
-      if (innerWidth >= 992) closeSidebar();
+      if (window.innerWidth >= 992) {
+        closeMobileSidebar();
+      }
     });
 
     /* ── Auto-dismiss alerts ─────────────────────────────────── */
