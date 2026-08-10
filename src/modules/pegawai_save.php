@@ -11,15 +11,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     $tmk = !empty($_POST['tanggal_masuk_kerja']) ? $_POST['tanggal_masuk_kerja'] : null;
+    $tmt_pangkat = !empty($_POST['tmt_pangkat']) ? $_POST['tmt_pangkat'] : null;
+    $tmt_jabatan = !empty($_POST['tmt_jabatan']) ? $_POST['tmt_jabatan'] : null;
+    $sk_inpassing_2025 = isset($_POST['sk_inpassing_2025']) ? 1 : 0;
+
     $data = [
         'nama'                => trim($_POST['nama'] ?? ''),
         'tempat_lahir'        => trim($_POST['tempat_lahir'] ?? ''),
         'tanggal_lahir'       => $_POST['tanggal_lahir'] ?? '',
         'nip'                 => trim($_POST['nip'] ?? ''),
         'kepangkatan'         => $_POST['kepangkatan'] ?? '',
+        'tmt_pangkat'         => $tmt_pangkat,
         'jabatan_fungsional'  => trim($_POST['jabatan_fungsional'] ?? '') ?: null,
+        'tmt_jabatan'         => $tmt_jabatan,
+        'sk_inpassing_2025'   => $sk_inpassing_2025,
         'ijazah'              => trim($_POST['ijazah'] ?? ''),
-        'status_kepegawaian'  => $_POST['status_kepegawaian'] ?? 'PNS',
+        'status_kepegawaian'  => $_POST['status_kepegawaian'] ?? 'Dosen PNS',
         'tanggal_masuk_kerja' => $tmk,
     ];
     $files = [

@@ -55,6 +55,7 @@ if (!$d) {
 
 <?php
 $pi = hitung_status_pensiun($d['tanggal_lahir'] ?? null, $d['status_kepegawaian'] ?? '', $d['jabatan_fungsional'] ?? '');
+$kd = hitung_kenaikan_pangkat_dosen($d);
 $mk = hitung_masa_kerja($d['tanggal_masuk_kerja'] ?? null);
 ?>
   <div class="col-lg-6">
@@ -80,11 +81,19 @@ $mk = hitung_masa_kerja($d['tanggal_masuk_kerja'] ?? null);
             <div class="e-dt">Status & Pangkat</div>
             <div class="e-dd">
               <span class="e-badge purple"><?php echo htmlspecialchars($d['status_kepegawaian'] ?? 'PNS'); ?></span> &middot; <?php echo htmlspecialchars($d['kepangkatan']); ?>
+              <?php if (!empty($d['tmt_pangkat'])): ?>
+                <div style="font-size:.73rem;color:var(--text-muted);margin-top:.15rem;">TMT Pangkat: <strong><?php echo date('d F Y', strtotime($d['tmt_pangkat'])); ?></strong></div>
+              <?php endif; ?>
             </div>
           </div>
           <div class="e-dl-row">
             <div class="e-dt">Jabatan Fungsional</div>
-            <div class="e-dd"><?php echo !empty($d['jabatan_fungsional']) ? htmlspecialchars($d['jabatan_fungsional']) : '<span style="color:var(--text-faint);">—</span>'; ?></div>
+            <div class="e-dd">
+              <?php echo !empty($d['jabatan_fungsional']) ? htmlspecialchars($d['jabatan_fungsional']) : '<span style="color:var(--text-faint);">—</span>'; ?>
+              <?php if (!empty($d['tmt_jabatan'])): ?>
+                <div style="font-size:.73rem;color:var(--text-muted);margin-top:.15rem;">TMT Jabatan: <strong><?php echo date('d F Y', strtotime($d['tmt_jabatan'])); ?></strong></div>
+              <?php endif; ?>
+            </div>
           </div>
           <div class="e-dl-row">
             <div class="e-dt">Ijazah Terakhir</div>
@@ -113,6 +122,79 @@ $mk = hitung_masa_kerja($d['tanggal_masuk_kerja'] ?? null);
       </div>
     </div>
   </div>
+
+  <?php if ($kd['is_dosen']): ?>
+  <!-- Card Peringatan Kenaikan Pangkat/Golongan (Khusus Dosen) -->
+  <div class="col-lg-12">
+    <div class="e-card" style="border: 1px solid rgba(99,102,241,0.25);">
+      <div class="e-card-header" style="background:linear-gradient(135deg, rgba(99,102,241,0.06), rgba(168,85,247,0.03));">
+        <div class="e-card-title">
+          <i class="bi bi-mortarboard-fill" style="color:var(--indigo);"></i>
+          Penyetaraan & Peringatan Kenaikan Pangkat / Golongan Dosen
+        </div>
+        <span class="e-badge <?php echo $kd['badge_class']; ?>" style="font-size:0.8rem; padding:0.4rem 0.75rem;">
+          <?php echo htmlspecialchars($kd['status_text']); ?>
+        </span>
+      </div>
+      <div class="e-card-body">
+        <div class="row g-3">
+          <div class="col-md-7">
+            <div style="padding:1rem; background:var(--bg-muted); border-radius:var(--r-md); border:1px solid var(--border-light);">
+              <div style="font-size:0.88rem; font-weight:700; color:var(--text-primary); margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;">
+                <i class="bi bi-info-circle-fill" style="color:var(--indigo);"></i> Status Penyetaraan Tunjangan Profesi / Golongan
+              </div>
+              <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:0.75rem;">
+                <?php echo htmlspecialchars($kd['detail_msg']); ?>
+              </p>
+              <div class="e-dl" style="font-size:0.82rem;">
+                <div class="e-dl-row">
+                  <div class="e-dt">Jabatan Akademik</div>
+                  <div class="e-dd"><strong><?php echo htmlspecialchars($kd['jabatan_norm']); ?></strong></div>
+                </div>
+                <div class="e-dl-row">
+                  <div class="e-dt">TMT Jabatan / TMT Kerja</div>
+                  <div class="e-dd"><?php echo $kd['tmt_fmt']; ?> (Masa Jabatan: <strong><?php echo $kd['masa_detail']; ?></strong>)</div>
+                </div>
+                <div class="e-dl-row">
+                  <div class="e-dt">Golongan Saat Ini</div>
+                  <div class="e-dd"><span class="e-badge purple"><?php echo htmlspecialchars($kd['golongan_saat_ini']); ?></span></div>
+                </div>
+                <div class="e-dl-row">
+                  <div class="e-dt">Penyetaraan Kemendikbud</div>
+                  <div class="e-dd"><span class="e-badge green" style="font-size:0.8rem; font-weight:700;">Golongan <?php echo htmlspecialchars($kd['target_golongan']); ?></span></div>
+                </div>
+                <?php if (!empty($d['sk_inpassing_2025'])): ?>
+                <div class="e-dl-row">
+                  <div class="e-dt">SK Inpassing</div>
+                  <div class="e-dd"><span class="e-badge blue"><i class="bi bi-check-circle-fill"></i> Memiliki SK Inpassing s.d. 2025</span></div>
+                </div>
+                <?php endif; ?>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-5">
+            <div style="padding:1rem; background:rgba(99,102,241,0.04); border-radius:var(--r-md); border:1px solid rgba(99,102,241,0.15); height:100%;">
+              <div style="font-size:0.82rem; font-weight:700; color:var(--indigo); margin-bottom:0.5rem;">
+                <i class="bi bi-journal-bookmark-fill"></i> Ketentuan Penyetaraan Tunjangan Profesi Non-ASN
+              </div>
+              <ul style="font-size:0.75rem; color:var(--text-muted); padding-left:1.1rem; margin-bottom:0.5rem; line-height:1.45;">
+                <li><strong>Asisten Ahli:</strong> Penyetaraan Golongan IIIb sejak TMT.</li>
+                <li><strong>Lektor:</strong> TMT (IIIb), TMT +1 s.d. TMT +3 (IIIc), > TMT +3 (IIId).</li>
+                <li><strong>Lektor Kepala:</strong> TMT (IIId), TMT +1 dst (IVa / IVb/IVc jika SK Inpassing s.d. 2025).</li>
+                <li><strong>Profesor:</strong> TMT (IVa), TMT +1..+3 (IVb), >3..5 thn (IVc), >5..7 thn (IVd), >7 thn (IVe + 200 AK).</li>
+              </ul>
+              <?php if (!empty($kd['catatan'])): ?>
+              <div style="font-size:0.75rem; background:var(--bg-card); padding:0.5rem 0.75rem; border-radius:var(--r-sm); border:1px dashed var(--border-medium); color:var(--text-primary);">
+                <strong>Catatan Sistem:</strong> <?php echo htmlspecialchars($kd['catatan']); ?>
+              </div>
+              <?php endif; ?>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <?php endif; ?>
 
   <div class="col-lg-6">
     <div class="e-card" style="height:100%;">

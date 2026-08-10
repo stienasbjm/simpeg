@@ -174,6 +174,246 @@ function hitung_status_pensiun($tanggal_lahir, $status_kepegawaian = '', $jabata
 }
 
 
+// ── Hitung Penyetaraan Tunjangan Profesi & Peringatan Kenaikan Pangkat Dosen ─
+/**
+ * Ketentuan Penyetaraan Tunjangan Profesi / Kenaikan Golongan Bagi Dosen Non-ASN:
+ * - Asisten Ahli : TMT s.d. seterusnya -> IIIb
+ * - Lektor       : TMT -> IIIb | TMT+1 s.d. TMT+3 -> IIIc | di atas TMT+3 -> IIId
+ * - Lektor Kepala: TMT -> IIId | TMT+1 dst -> IVa (atau IVb/IVc bagi SK Inpassing s.d. 2025)
+ * - Profesor     : TMT -> IVa | TMT+1 s.d. TMT+3 -> IVb | >TMT+3 s.d. TMT+5 -> IVc | >TMT+5 s.d. TMT+7 -> IVd | >TMT+7 -> IVe (+200 AK)
+ */
+function hitung_kenaikan_pangkat_dosen($pegawai) {
+    if (empty($pegawai)) {
+        return [
+            'is_dosen'      => false,
+            'is_due'        => false,
+            'is_upcoming'   => false,
+            'status_text'   => 'Bukan Dosen',
+            'badge_class'   => 'secondary',
+            'detail_msg'    => '',
+            'catatan'       => ''
+        ];
+    }
+
+    $st = strtolower($pegawai['status_kepegawaian'] ?? '');
+    $jf = strtolower($pegawai['jabatan_fungsional'] ?? '');
+
+    $is_dosen = (strpos($st, 'dosen') !== false ||
+                 strpos($jf, 'dosen') !== false ||
+                 strpos($jf, 'asisten ahli') !== false ||
+                 strpos($jf, 'lektor') !== false ||
+                 strpos($jf, 'profesor') !== false ||
+                 strpos($jf, 'guru besar') !== false);
+
+    if (!$is_dosen) {
+        return [
+            'is_dosen'      => false,
+            'is_due'        => false,
+            'is_upcoming'   => false,
+            'status_text'   => 'Bukan Dosen',
+            'badge_class'   => 'secondary',
+            'detail_msg'    => '',
+            'catatan'       => ''
+        ];
+    }
+
+    // Normalisasi Jabatan Akademik
+    $jabatan_norm = 'Lektor';
+    if (strpos($jf, 'profesor') !== false || strpos($jf, 'guru besar') !== false || strpos($jf, 'prof') !== false) {
+        $jabatan_norm = 'Profesor';
+    } elseif (strpos($jf, 'lektor kepala') !== false) {
+        $jabatan_norm = 'Lektor Kepala';
+    } elseif (strpos($jf, 'lektor') !== false) {
+        $jabatan_norm = 'Lektor';
+    } elseif (strpos($jf, 'asisten ahli') !== false) {
+        $jabatan_norm = 'Asisten Ahli';
+    }
+
+    // Prioritas TMT: tmt_jabatan -> tmt_pangkat -> tanggal_masuk_kerja
+    $tmt_raw = !empty($pegawai['tmt_jabatan']) && $pegawai['tmt_jabatan'] !== '0000-00-00'
+        ? $pegawai['tmt_jabatan']
+        : (!empty($pegawai['tmt_pangkat']) && $pegawai['tmt_pangkat'] !== '0000-00-00'
+            ? $pegawai['tmt_pangkat']
+            : ($pegawai['tanggal_masuk_kerja'] ?? null));
+
+    if (empty($tmt_raw) || $tmt_raw === '0000-00-00') {
+        return [
+            'is_dosen'           => true,
+            'jabatan_norm'       => $jabatan_norm,
+            'tmt_fmt'            => 'Belum Diisi',
+            'masa_tahun'         => 0,
+            'masa_bulan'         => 0,
+            'masa_detail'        => 'TMT belum diisi',
+            'target_golongan'    => '—',
+            'golongan_saat_ini'  => $pegawai['kepangkatan'] ?? '—',
+            'is_due'             => false,
+            'is_upcoming'        => false,
+            'status_text'        => '⚠️ TMT Belum Diisi',
+            'badge_class'        => 'amber',
+            'detail_msg'         => 'Data TMT Jabatan / Tanggal Masuk Bekerja belum diisi di sistem.',
+            'catatan'            => 'Harap isi TMT Jabatan Akademik atau Tanggal Masuk Bekerja untuk menghitung penyetaraan golongan.'
+        ];
+    }
+
+    try {
+        $tmt_date = new DateTime($tmt_raw);
+        $today    = new DateTime();
+    } catch (Exception $e) {
+        return [
+            'is_dosen'      => true,
+            'is_due'        => false,
+            'is_upcoming'   => false,
+            'status_text'   => 'TMT Invalid',
+            'badge_class'   => 'secondary',
+            'detail_msg'    => '',
+            'catatan'       => ''
+        ];
+    }
+
+    $diff = $tmt_date->diff($today);
+    $years = $diff->y;
+    $months = $diff->m;
+    $total_months = ($years * 12) + $months;
+
+    $masa_parts = [];
+    if ($years > 0) $masa_parts[] = "$years thn";
+    if ($months > 0) $masa_parts[] = "$months bln";
+    if (empty($masa_parts)) $masa_parts[] = "0 bln";
+    $masa_detail = implode(' ', $masa_parts);
+
+    $months_list = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
+    $tmt_fmt = $tmt_date->format('d') . ' ' . ($months_list[(int)$tmt_date->format('n')] ?? '') . ' ' . $tmt_date->format('Y');
+
+    $sk_2025 = !empty($pegawai['sk_inpassing_2025']);
+
+    $target_gol = 'IIIb';
+    $next_target = null;
+    $catatan = '';
+    $next_threshold_months = 999;
+
+    if ($jabatan_norm === 'Asisten Ahli') {
+        $target_gol = 'IIIb';
+        $catatan = 'Asisten Ahli berhak penyetaraan tunjangan profesi Golongan IIIb sejak TMT seterusnya. Rekomendasi kenaikan ke Lektor jika memenuhi kualifikasi.';
+        if ($total_months >= 24) {
+            $next_target = 'Lektor (IIIc)';
+        }
+    } elseif ($jabatan_norm === 'Lektor') {
+        if ($years < 1) {
+            $target_gol = 'IIIb';
+            $next_target = 'IIIc';
+            $next_threshold_months = 12 - $total_months;
+            $catatan = 'Masa jabatan TMT baru (< 1 thn). Berhak penyetaraan IIIb.';
+        } elseif ($years >= 1 && $years <= 3) {
+            $target_gol = 'IIIc';
+            $next_target = 'IIId';
+            $next_threshold_months = 36 - $total_months;
+            $catatan = 'Masa jabatan TMT +1 s.d. TMT +3 thn. Berhak penyetaraan IIIc.';
+        } else {
+            $target_gol = 'IIId';
+            $catatan = 'Masa jabatan di atas TMT +3 thn. Berhak penyetaraan IIId.';
+        }
+    } elseif ($jabatan_norm === 'Lektor Kepala') {
+        if ($years < 1) {
+            $target_gol = 'IIId';
+            $next_target = $sk_2025 ? 'IVb / IVc' : 'IVa';
+            $next_threshold_months = 12 - $total_months;
+            $catatan = 'Masa jabatan TMT baru (< 1 thn). Berhak penyetaraan IIId.';
+        } else {
+            $target_gol = $sk_2025 ? 'IVb' : 'IVa';
+            $catatan = $sk_2025
+                ? 'Masa jabatan TMT +1 dst dengan SK Inpassing s.d. 2025. Berhak penyetaraan IVb / IVc.'
+                : 'Masa jabatan TMT +1 dst. Berhak penyetaraan IVa.';
+        }
+    } elseif ($jabatan_norm === 'Profesor') {
+        if ($years < 1) {
+            $target_gol = 'IVa';
+            $next_target = 'IVb';
+            $next_threshold_months = 12 - $total_months;
+            $catatan = 'Masa jabatan Profesor TMT baru (< 1 thn). Berhak penyetaraan IVa.';
+        } elseif ($years >= 1 && $years <= 3) {
+            $target_gol = 'IVb';
+            $next_target = 'IVc';
+            $next_threshold_months = 36 - $total_months;
+            $catatan = 'Masa jabatan Profesor TMT +1 s.d. TMT +3 thn. Berhak penyetaraan IVb.';
+        } elseif ($years > 3 && $years <= 5) {
+            $target_gol = 'IVc';
+            $next_target = 'IVd';
+            $next_threshold_months = 60 - $total_months;
+            $catatan = 'Masa jabatan Profesor di atas TMT +3 s.d. TMT +5 thn. Berhak penyetaraan IVc.';
+        } elseif ($years > 5 && $years <= 7) {
+            $target_gol = 'IVd';
+            $next_target = 'IVe';
+            $next_threshold_months = 84 - $total_months;
+            $catatan = 'Masa jabatan Profesor di atas TMT +5 s.d. TMT +7 thn. Berhak penyetaraan IVd.';
+        } else {
+            $target_gol = 'IVe';
+            $catatan = 'Masa jabatan Profesor di atas TMT +7 thn s.d. Pensiun. Berhak penyetaraan IVe (Syarat tambahan: 200 Angka Kredit).';
+        }
+    }
+
+    $gol_rank = [
+        'Ia'=>1, 'Ib'=>2, 'Ic'=>3, 'Id'=>4,
+        'IIa'=>5, 'IIb'=>6, 'IIc'=>7, 'IId'=>8,
+        'IIIa'=>9, 'IIIb'=>10, 'IIIc'=>11, 'IIId'=>12,
+        'IVa'=>13, 'IVb'=>14, 'IVc'=>15, 'IVd'=>16, 'IVe'=>17
+    ];
+
+    $curr_gol = 'IIIa';
+    if (preg_match('/(I{1,3}|IV|V)[a-e]/i', $pegawai['kepangkatan'] ?? '', $matches)) {
+        $found = strtolower($matches[0]);
+        $map = ['iiia'=>'IIIa','iiib'=>'IIIb','iiic'=>'IIIc','iiid'=>'IIId','iva'=>'IVa','ivb'=>'IVb','ivc'=>'IVc','ivd'=>'IVd','ive'=>'IVe','iia'=>'IIa','iib'=>'IIb','iic'=>'IIc','iid'=>'IId','ia'=>'Ia','ib'=>'Ib','ic'=>'Ic','id'=>'Id'];
+        $curr_gol = $map[$found] ?? strtoupper($found);
+    } else {
+        foreach ($gol_rank as $g_code => $val) {
+            if (stripos($pegawai['kepangkatan'] ?? '', $g_code) !== false) {
+                $curr_gol = $g_code;
+                break;
+            }
+        }
+    }
+
+    $curr_level   = $gol_rank[$curr_gol] ?? 10;
+    $target_level = $gol_rank[$target_gol] ?? 10;
+
+    $is_due = false;
+    $is_upcoming = false;
+
+    if ($curr_level < $target_level) {
+        $is_due = true;
+        $status_text = "⚠️ Waktunya Naik Golongan (Target: $target_gol)";
+        $badge_class = "danger";
+        $detail_msg = "Golongan saat ini ($curr_gol) masih di bawah penyetaraan masa jabatan ($target_gol). Dosen yang bersangkutan sudah waktunya melakukan kenaikan pangkat/golongan.";
+    } elseif ($curr_level == $target_level && $next_target && $next_threshold_months <= 3 && $next_threshold_months > 0) {
+        $is_upcoming = true;
+        $status_text = "⚡ Mendekati Penyetaraan ($next_target)";
+        $badge_class = "warning";
+        $detail_msg = "Mendekati jadwal penyetaraan / kenaikan ke $next_target dalam $next_threshold_months bulan lagi.";
+    } else {
+        $status_text = "✅ Golongan Sesuai Masa Jabatan ($curr_gol)";
+        $badge_class = "green";
+        $detail_msg = "Pangkat/Golongan saat ini ($curr_gol) sudah memenuhi standar penyetaraan Kemendikbud ($target_gol).";
+    }
+
+    return [
+        'is_dosen'           => true,
+        'jabatan_norm'       => $jabatan_norm,
+        'tmt_fmt'            => $tmt_fmt,
+        'masa_tahun'         => $years,
+        'masa_bulan'         => $months,
+        'masa_detail'        => $masa_detail,
+        'target_golongan'    => $target_gol,
+        'next_target'        => $next_target,
+        'golongan_saat_ini'  => $curr_gol,
+        'is_due'             => $is_due,
+        'is_upcoming'        => $is_upcoming,
+        'status_text'        => $status_text,
+        'badge_class'        => $badge_class,
+        'detail_msg'         => $detail_msg,
+        'catatan'            => $catatan,
+    ];
+}
+
+
 // ── CRUD Pegawai ──────────────────────────────────────────────────
 function get_all_pegawai($conn) {
     $sql = "SELECT * FROM pegawai ORDER BY nama ASC";
@@ -199,15 +439,15 @@ function add_pegawai($conn, $data, $files) {
     $file_jabatan_fungsional = upload_file($files['file_jabatan_fungsional'],'jabatan_fungsional');
 
     $stmt = $conn->prepare(
-        "INSERT INTO pegawai (nama, tempat_lahir, tanggal_lahir, nip, kepangkatan, jabatan_fungsional,
+        "INSERT INTO pegawai (nama, tempat_lahir, tanggal_lahir, nip, kepangkatan, tmt_pangkat, jabatan_fungsional, tmt_jabatan, sk_inpassing_2025,
          ijazah, status_kepegawaian, tanggal_masuk_kerja,
          file_ijazah, file_kepangkatan, file_jabatan_fungsional)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
     $stmt->bind_param(
-        "ssssssssssss",
+        "ssssssssissssss",
         $data['nama'], $data['tempat_lahir'], $data['tanggal_lahir'], $data['nip'],
-        $data['kepangkatan'], $data['jabatan_fungsional'], $data['ijazah'],
+        $data['kepangkatan'], $data['tmt_pangkat'], $data['jabatan_fungsional'], $data['tmt_jabatan'], $data['sk_inpassing_2025'], $data['ijazah'],
         $data['status_kepegawaian'], $data['tanggal_masuk_kerja'],
         $file_ijazah, $file_kepangkatan, $file_jabatan_fungsional
     );
@@ -241,14 +481,14 @@ function update_pegawai($conn, $id, $data, $files) {
     }
 
     $stmt = $conn->prepare(
-        "UPDATE pegawai SET nama=?, tempat_lahir=?, tanggal_lahir=?, nip=?, kepangkatan=?,
-         jabatan_fungsional=?, ijazah=?, status_kepegawaian=?, tanggal_masuk_kerja=?,
+        "UPDATE pegawai SET nama=?, tempat_lahir=?, tanggal_lahir=?, nip=?, kepangkatan=?, tmt_pangkat=?,
+         jabatan_fungsional=?, tmt_jabatan=?, sk_inpassing_2025=?, ijazah=?, status_kepegawaian=?, tanggal_masuk_kerja=?,
          file_ijazah=?, file_kepangkatan=?, file_jabatan_fungsional=? WHERE id=?"
     );
     $stmt->bind_param(
-        "ssssssssssssi",
+        "ssssssssissssssi",
         $data['nama'], $data['tempat_lahir'], $data['tanggal_lahir'], $data['nip'],
-        $data['kepangkatan'], $data['jabatan_fungsional'], $data['ijazah'],
+        $data['kepangkatan'], $data['tmt_pangkat'], $data['jabatan_fungsional'], $data['tmt_jabatan'], $data['sk_inpassing_2025'], $data['ijazah'],
         $data['status_kepegawaian'], $data['tanggal_masuk_kerja'],
         $file_ijazah, $file_kepangkatan, $file_jabatan_fungsional, $id
     );

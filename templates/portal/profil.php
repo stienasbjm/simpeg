@@ -78,6 +78,7 @@ $foto_url = $has_foto ? BASE_URL . 'public/uploads/foto/' . htmlspecialchars($pe
 
 <?php
 $pensiun_info = $pegawai ? hitung_status_pensiun($pegawai['tanggal_lahir'] ?? null, $pegawai['status_kepegawaian'] ?? '', $pegawai['jabatan_fungsional'] ?? '') : null;
+$kd = $pegawai ? hitung_kenaikan_pangkat_dosen($pegawai) : null;
 ?>
     <!-- Stats -->
     <div class="e-card" style="margin-top:1rem;">
@@ -125,6 +126,43 @@ $pensiun_info = $pegawai ? hitung_status_pensiun($pegawai['tanggal_lahir'] ?? nu
         </div>
       </div>
     </div>
+
+    <?php if ($kd && $kd['is_dosen']): ?>
+    <!-- Card Penyetaraan Kenaikan Pangkat Dosen di Profil Portal -->
+    <div class="e-card" style="margin-top:1rem; border:1px solid rgba(99,102,241,0.3);">
+      <div class="e-card-header" style="background:linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.04));">
+        <div class="e-card-title" style="font-size:0.85rem;">
+          <i class="bi bi-mortarboard-fill" style="color:var(--indigo);"></i> Peringatan Kenaikan Pangkat Dosen
+        </div>
+      </div>
+      <div class="e-card-body" style="padding:1rem;">
+        <span class="e-badge <?php echo $kd['badge_class']; ?>" style="font-size:0.75rem; padding:0.35rem 0.65rem; width:100%; justify-content:center; text-align:center; margin-bottom:0.75rem; display:flex;">
+          <?php echo htmlspecialchars($kd['status_text']); ?>
+        </span>
+        <p style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:0.75rem; line-height:1.4;">
+          <?php echo htmlspecialchars($kd['detail_msg']); ?>
+        </p>
+        <div style="background:var(--bg-muted); padding:0.6rem 0.75rem; border-radius:var(--r-md); border:1px solid var(--border-light); font-size:0.75rem;">
+          <div class="d-flex justify-content-between mb-1">
+            <span style="color:var(--text-muted);">Jabatan Akademik:</span>
+            <strong><?php echo htmlspecialchars($kd['jabatan_norm']); ?></strong>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span style="color:var(--text-muted);">TMT Jabatan:</span>
+            <span><?php echo $kd['tmt_fmt']; ?></span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span style="color:var(--text-muted);">Masa Jabatan:</span>
+            <strong style="color:var(--indigo);"><?php echo $kd['masa_detail']; ?></strong>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span style="color:var(--text-muted);">Target Golongan:</span>
+            <span class="e-badge green" style="font-weight:700;">Gol. <?php echo htmlspecialchars($kd['target_golongan']); ?></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <?php endif; ?>
   </div>
 
   <!-- Edit Form -->

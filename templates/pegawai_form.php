@@ -86,8 +86,8 @@ $current_status  = $data['status_kepegawaian'] ?? 'Dosen PNS';
           </div>
         </div>
 
-        <!-- Pangkat/Golongan Dropdown -->
-        <div class="col-md-6">
+        <!-- Pangkat/Golongan & TMT Pangkat -->
+        <div class="col-md-4">
           <div class="e-form-group">
             <label class="e-label" for="kepangkatan">Pangkat / Golongan <span class="req">*</span></label>
             <select class="e-select" id="kepangkatan" name="kepangkatan" required>
@@ -104,8 +104,15 @@ $current_status  = $data['status_kepegawaian'] ?? 'Dosen PNS';
             </select>
           </div>
         </div>
+        <div class="col-md-2">
+          <div class="e-form-group">
+            <label class="e-label" for="tmt_pangkat">TMT Pangkat</label>
+            <input class="e-input" type="date" id="tmt_pangkat" name="tmt_pangkat"
+              value="<?php echo htmlspecialchars($data['tmt_pangkat'] ?? ''); ?>">
+          </div>
+        </div>
 
-        <!-- Status Kepegawaian -->
+        <!-- Status Kepegawaian & Tanggal Masuk Kerja -->
         <div class="col-md-3">
           <div class="e-form-group">
             <label class="e-label" for="status_kepegawaian">Status Kepegawaian <span class="req">*</span></label>
@@ -116,8 +123,6 @@ $current_status  = $data['status_kepegawaian'] ?? 'Dosen PNS';
             </select>
           </div>
         </div>
-
-        <!-- Tanggal Masuk Kerja -->
         <div class="col-md-3">
           <div class="e-form-group">
             <label class="e-label" for="tanggal_masuk_kerja">Tgl. Mulai Bekerja</label>
@@ -126,20 +131,42 @@ $current_status  = $data['status_kepegawaian'] ?? 'Dosen PNS';
           </div>
         </div>
 
-        <div class="col-md-6">
+        <!-- Jabatan Fungsional & TMT Jabatan -->
+        <div class="col-md-4">
           <div class="e-form-group">
-            <label class="e-label" for="jabatan_fungsional">Jabatan Fungsional</label>
+            <label class="e-label" for="jabatan_fungsional">Jabatan Fungsional Dosen</label>
             <input class="e-input" type="text" id="jabatan_fungsional" name="jabatan_fungsional"
               value="<?php echo htmlspecialchars($data['jabatan_fungsional'] ?? ''); ?>"
-              placeholder="Lektor / Asisten Ahli (opsional)">
+              placeholder="Asisten Ahli / Lektor / Lektor Kepala / Profesor">
           </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-3">
+          <div class="e-form-group">
+            <label class="e-label" for="tmt_jabatan">TMT Jabatan Akademik</label>
+            <input class="e-input" type="date" id="tmt_jabatan" name="tmt_jabatan"
+              value="<?php echo htmlspecialchars($data['tmt_jabatan'] ?? ''); ?>">
+          </div>
+        </div>
+        <div class="col-md-5">
           <div class="e-form-group">
             <label class="e-label" for="ijazah">Ijazah Terakhir <span class="req">*</span></label>
             <input class="e-input" type="text" id="ijazah" name="ijazah"
               value="<?php echo htmlspecialchars($data['ijazah'] ?? ''); ?>"
-              placeholder="S2 Teknik Informatika" required>
+              placeholder="S2 / S3..." required>
+          </div>
+        </div>
+
+        <!-- Checkbox SK Inpassing s.d. 2025 (Khusus Dosen) -->
+        <div class="col-md-12">
+          <div class="form-check" style="background:var(--bg-muted);padding:.75rem 1rem 1rem 2.25rem;border-radius:var(--r-md);border:1px solid var(--border-light);">
+            <input class="form-check-input" type="checkbox" id="sk_inpassing_2025" name="sk_inpassing_2025" value="1"
+              <?php echo !empty($data['sk_inpassing_2025']) ? 'checked' : ''; ?>>
+            <label class="form-check-label" for="sk_inpassing_2025" style="font-weight:600;font-size:.85rem;color:var(--text-primary);">
+              <i class="bi bi-award-fill" style="color:var(--indigo);"></i> Dosen Memiliki SK Inpassing s.d. Tahun 2025
+            </label>
+            <div style="font-size:.75rem;color:var(--text-muted);margin-top:.2rem;">
+              Centang jika dosen Non-ASN memiliki SK Inpassing sampai tahun 2025 (Ketentuan penyetaraan Lektor Kepala s.d. IVb/IVc).
+            </div>
           </div>
         </div>
       </div>
