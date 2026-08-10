@@ -28,7 +28,8 @@ $is_keuangan_active = in_array($current, $keuangan_matches);
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SIMPEG System</title>
+  <title>SIMPEG System — STIE Nasional Banjarmasin</title>
+  <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>public/images/favicon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="<?php echo BASE_URL; ?>public/css/style.css">
@@ -58,11 +59,11 @@ $is_keuangan_active = in_array($current, $keuangan_matches);
     <i class="bi bi-list"></i>
   </button>
 
-  <a class="e-brand" href="<?php echo BASE_URL; ?>dashboard">
-    <div class="e-brand-icon"><i class="bi bi-person-vcard-fill"></i></div>
+  <a class="e-brand" href="<?php echo BASE_URL; ?>dashboard" style="display:flex;align-items:center;gap:.65rem;text-decoration:none;">
+    <img src="<?php echo BASE_URL; ?>public/images/logo.png" alt="Logo STIENAS" style="height:38px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.1));">
     <div>
-      <div class="e-brand-name">SIMPEG</div>
-      <div class="e-brand-tag">Sistem Kepegawaian & Keuangan</div>
+      <div class="e-brand-name" style="font-weight:900;letter-spacing:-.02em;">SIMPEG</div>
+      <div class="e-brand-tag" style="font-size:.68rem;opacity:.8;">STIE Nasional Banjarmasin</div>
     </div>
   </a>
 

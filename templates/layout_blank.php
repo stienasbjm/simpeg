@@ -13,6 +13,7 @@
       document.documentElement.setAttribute('data-bs-theme', savedTheme);
     })();
   </script>
+  <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>public/images/favicon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="<?php echo BASE_URL; ?>public/css/style.css">
@@ -24,6 +25,7 @@
   <!-- Left Side: Hero Banner -->
   <div class="e-login-hero-side">
     <div class="e-hero-content">
+      <img src="<?php echo BASE_URL; ?>public/images/logo.png" alt="Logo STIENAS" style="height:76px;width:auto;margin-bottom:1.5rem;filter:drop-shadow(0 4px 16px rgba(0,0,0,.2));">
       <h1 class="e-hero-title">
         Empowering<br>
         Educational<br>
@@ -51,14 +53,12 @@
 
         <!-- Card Header -->
         <div class="e-card-header">
-          <!-- Logo Lockup: icon kiri, nama+sub kanan -->
-          <div class="e-card-brand">
-            <div class="e-card-icon-badge">
-              <i class="bi bi-person-vcard-fill"></i>
-            </div>
+          <!-- Logo Lockup: logo kiri, nama+sub kanan -->
+          <div class="e-card-brand" style="display:flex;align-items:center;gap:.85rem;">
+            <img src="<?php echo BASE_URL; ?>public/images/logo.png" alt="Logo STIENAS" style="height:48px;width:auto;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,.12));">
             <div class="e-card-brand-text">
-              <div class="e-card-app-name">SIMPEG</div>
-              <p class="e-card-app-sub">Sistem Kepegawaian &amp; Absensi Digital</p>
+              <div class="e-card-app-name" style="font-weight:900;">SIMPEG</div>
+              <p class="e-card-app-sub">STIE Nasional Banjarmasin</p>
             </div>
           </div>
           <div class="e-card-divider"></div>

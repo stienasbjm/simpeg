@@ -118,9 +118,12 @@ if (empty($list_gaji)) {
 <div class="slip-card">
   <!-- Kop Header -->
   <div class="kop-header">
-    <div>
-      <div class="kop-title">SIMPEG System</div>
-      <div class="kop-sub">Sistem Manajemen Kepegawaian & Penggajian Resmi</div>
+    <div style="display:flex;align-items:center;gap:1.25rem;">
+      <img src="<?php echo BASE_URL; ?>public/images/logo.png" alt="Logo STIENAS" style="height:56px;width:auto;object-fit:contain;">
+      <div>
+        <div class="kop-title">STIE NASIONAL BANJARMASIN</div>
+        <div class="kop-sub">Sistem Informasi Manajemen Kepegawaian (SIMPEG)</div>
+      </div>
     </div>
     <div class="slip-badge">SLIP GAJI PEGAWAI</div>
   </div>

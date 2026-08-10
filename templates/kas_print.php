@@ -65,9 +65,12 @@ $jenis_lbl = $jenis_kas === 'kas_kecil' ? 'Kas Kecil (Operasional)' : ($jenis_ka
 <div class="report-card">
   <!-- Kop Header -->
   <div class="kop-header">
-    <div>
-      <div class="kop-title">SIMPEG System</div>
-      <div class="kop-sub">Laporan Resmi Transaksi Arus Kas Instansi & Keuangan</div>
+    <div style="display:flex;align-items:center;gap:1.25rem;">
+      <img src="<?php echo BASE_URL; ?>public/images/logo.png" alt="Logo STIENAS" style="height:56px;width:auto;object-fit:contain;">
+      <div>
+        <div class="kop-title">STIE NASIONAL BANJARMASIN</div>
+        <div class="kop-sub">Laporan Resmi Transaksi Arus Kas Instansi & Keuangan</div>
+      </div>
     </div>
     <div class="report-badge"><?php echo $jenis_lbl; ?></div>
   </div>

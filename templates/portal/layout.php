@@ -9,7 +9,8 @@ $current   = $page ?? 'absensi';
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Pegawai — SIMPEG System</title>
+  <title>Portal Pegawai — STIE Nasional Banjarmasin</title>
+  <link rel="icon" type="image/png" href="<?php echo BASE_URL; ?>public/images/favicon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="<?php echo BASE_URL; ?>public/css/style.css">
@@ -55,10 +56,10 @@ $current   = $page ?? 'absensi';
 
 <!-- Topbar Portal -->
 <div class="portal-topbar">
-  <div class="e-brand-icon" style="width:32px;height:32px;"><i class="bi bi-person-vcard-fill" style="font-size:.85rem;"></i></div>
+  <img src="<?php echo BASE_URL; ?>public/images/logo.png" alt="Logo STIENAS" style="height:34px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.1));">
   <div>
-    <div class="e-brand-name" style="font-size:.85rem;">Portal Pegawai</div>
-    <div class="e-brand-tag">SIMPEG System</div>
+    <div class="e-brand-name" style="font-size:.85rem;font-weight:900;">Portal Pegawai</div>
+    <div class="e-brand-tag" style="font-size:.68rem;opacity:.8;">STIE Nasional Banjarmasin</div>
   </div>
 
   <nav class="portal-nav">
