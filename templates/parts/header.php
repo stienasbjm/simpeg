@@ -74,7 +74,7 @@ $is_keuangan_active = in_array($current, $keuangan_matches);
     <span style="margin-left:auto;font-size:.68rem;opacity:.6;background:var(--bg-card);border:1px solid var(--border-medium);border-radius:4px;padding:.1rem .35rem;">⌘K</span>
   </div>
 
-  <div class="e-topbar-right">
+  <div class="e-topbar-right" style="display:flex;align-items:center;gap:.75rem;">
     <button class="e-theme-btn" id="themeBtn" type="button" title="Toggle dark mode">
       <i class="bi bi-moon" id="themeIco"></i>
     </button>
@@ -90,6 +90,12 @@ $is_keuangan_active = in_array($current, $keuangan_matches);
         </div>
       </div>
     </div>
+
+    <!-- Tombol Logout Pojok Kanan Atas -->
+    <a href="<?php echo BASE_URL; ?>logout" class="e-btn-logout-topbar" title="Keluar dari Sistem" style="display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .85rem;border-radius:var(--r-md);background:rgba(239,68,68,.12);color:var(--red);font-size:.82rem;font-weight:700;text-decoration:none;border:1px solid rgba(239,68,68,.25);transition:all .2s ease;">
+      <i class="bi bi-box-arrow-right" style="font-size:.95rem;"></i>
+      <span class="d-none d-sm-inline">Logout</span>
+    </a>
   </div>
 </header>
 

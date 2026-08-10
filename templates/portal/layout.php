@@ -75,8 +75,9 @@ $current   = $page ?? 'absensi';
       <i class="bi bi-moon" id="themeIco"></i>
     </button>
     <a href="<?php echo BASE_URL; ?>logout"
-       class="portal-nav-link" style="color:var(--red);" title="Logout">
-      <i class="bi bi-box-arrow-right"></i>
+       class="e-btn-logout-topbar" style="display:inline-flex;align-items:center;gap:.4rem;padding:.38rem .8rem;border-radius:var(--r-full);background:rgba(239,68,68,.12);color:var(--red);font-size:.8rem;font-weight:700;text-decoration:none;border:1px solid rgba(239,68,68,.25);transition:all .2s ease;margin-left:.35rem;" title="Logout / Keluar">
+      <i class="bi bi-box-arrow-right" style="font-size:.9rem;"></i>
+      <span class="d-none d-sm-inline">Logout</span>
     </a>
   </nav>
 </div>
