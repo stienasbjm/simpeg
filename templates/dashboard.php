@@ -367,7 +367,7 @@ foreach ($all_pegawai_dash as $peg) {
       <div class="e-card-body" style="font-size:.875rem;">
         <div class="d-flex justify-content-between py-2 border-bottom">
           <span style="color:var(--text-muted);">Sistem</span>
-          <strong style="color:var(--text-primary);">SIMPEG & e-Arsip v2.5</strong>
+          <strong style="color:var(--text-primary);">SIMPEG v1.5</strong>
         </div>
         <div class="d-flex justify-content-between py-2 border-bottom">
           <span style="color:var(--text-muted);">Database</span>
