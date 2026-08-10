@@ -108,7 +108,7 @@
         </form>
 
         <div class="e-card-support-footer">
-          Having trouble? <a href="#" class="e-link-accent" onclick="Swal.fire({title:'Bantuan IT Support', text:'Email: support@stienas-banjarmasin.ac.id | WhatsApp: +62 812-3456-7890', icon:'question', confirmButtonColor:'#0f172a'}); return false;">Contact IT Support</a>
+          Having trouble? <a href="#" class="e-link-accent" onclick="Swal.fire({title:'Bantuan IT Support', text:'Email: info@stienas-ypb.ac.id | WhatsApp: +62 812-8700-0187', icon:'question', confirmButtonColor:'#0f172a'}); return false;">Contact IT Support</a>
         </div>
 
       </div>
