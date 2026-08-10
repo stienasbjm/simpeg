@@ -78,7 +78,7 @@ $foto_url = $has_foto ? BASE_URL . 'public/uploads/foto/' . htmlspecialchars($pe
 
 <?php
 $pensiun_info = $pegawai ? hitung_status_pensiun($pegawai['tanggal_lahir'] ?? null, $pegawai['status_kepegawaian'] ?? '', $pegawai['jabatan_fungsional'] ?? '') : null;
-$kd = $pegawai ? hitung_kenaikan_pangkat_dosen($pegawai) : null;
+$kd = $pegawai ? hitung_kenaikan_pangkat_pegawai($pegawai) : null;
 ?>
     <!-- Stats -->
     <div class="e-card" style="margin-top:1rem;">
@@ -127,12 +127,12 @@ $kd = $pegawai ? hitung_kenaikan_pangkat_dosen($pegawai) : null;
       </div>
     </div>
 
-    <?php if ($kd && $kd['is_dosen']): ?>
-    <!-- Card Penyetaraan Kenaikan Pangkat Dosen di Profil Portal -->
+    <?php if ($kd && !empty($kd['status_text'])): ?>
+    <!-- Card Penyetaraan / Kenaikan Pangkat di Profil Portal -->
     <div class="e-card" style="margin-top:1rem; border:1px solid rgba(99,102,241,0.3);">
       <div class="e-card-header" style="background:linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.04));">
         <div class="e-card-title" style="font-size:0.85rem;">
-          <i class="bi bi-mortarboard-fill" style="color:var(--indigo);"></i> Peringatan Kenaikan Pangkat Dosen
+          <i class="bi <?php echo $kd['is_dosen'] ? 'bi-mortarboard-fill' : 'bi-award-fill'; ?>" style="color:var(--indigo);"></i> Peringatan Kenaikan Pangkat (<?php echo htmlspecialchars($kd['kategori_pegawai']); ?>)
         </div>
       </div>
       <div class="e-card-body" style="padding:1rem;">
@@ -144,15 +144,15 @@ $kd = $pegawai ? hitung_kenaikan_pangkat_dosen($pegawai) : null;
         </p>
         <div style="background:var(--bg-muted); padding:0.6rem 0.75rem; border-radius:var(--r-md); border:1px solid var(--border-light); font-size:0.75rem;">
           <div class="d-flex justify-content-between mb-1">
-            <span style="color:var(--text-muted);">Jabatan Akademik:</span>
+            <span style="color:var(--text-muted);">Jabatan / Status:</span>
             <strong><?php echo htmlspecialchars($kd['jabatan_norm']); ?></strong>
           </div>
           <div class="d-flex justify-content-between mb-1">
-            <span style="color:var(--text-muted);">TMT Jabatan:</span>
+            <span style="color:var(--text-muted);">TMT Pangkat/Kerja:</span>
             <span><?php echo $kd['tmt_fmt']; ?></span>
           </div>
           <div class="d-flex justify-content-between mb-1">
-            <span style="color:var(--text-muted);">Masa Jabatan:</span>
+            <span style="color:var(--text-muted);">Masa Pangkat:</span>
             <strong style="color:var(--indigo);"><?php echo $kd['masa_detail']; ?></strong>
           </div>
           <div class="d-flex justify-content-between">

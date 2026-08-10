@@ -43,28 +43,28 @@ $status_badge_cls = [
 
 <div class="e-table-wrap">
   <?php
-  // Hitung jumlah pegawai pensiun & dosen yang waktunya naik pangkat/golongan
+  // Hitung jumlah pegawai pensiun & pegawai (dosen & tendik) yang waktunya naik pangkat/golongan
   $near_pensiun_list = [];
-  $dosen_due_list    = [];
+  $pegawai_due_list  = [];
   if (!empty($list)) {
       foreach ($list as $r) {
           $pi = hitung_status_pensiun($r['tanggal_lahir'] ?? null, $r['status_kepegawaian'] ?? '', $r['jabatan_fungsional'] ?? '');
           if ($pi['is_mendekati']) {
               $near_pensiun_list[] = $r['nama'] . ' (' . $pi['status_text'] . ')';
           }
-          $kd = hitung_kenaikan_pangkat_dosen($r);
-          if ($kd['is_dosen'] && ($kd['is_due'] || $kd['is_upcoming'])) {
-              $dosen_due_list[] = $r['nama'] . ' (' . $kd['status_text'] . ')';
+          $kd = hitung_kenaikan_pangkat_pegawai($r);
+          if ($kd['is_due'] || $kd['is_upcoming']) {
+              $pegawai_due_list[] = $r['nama'] . ' [' . $kd['kategori_pegawai'] . '] (' . $kd['status_text'] . ')';
           }
       }
   }
   ?>
 
-  <?php if (!empty($dosen_due_list)): ?>
+  <?php if (!empty($pegawai_due_list)): ?>
   <div style="padding:0.75rem 1.25rem; background:rgba(99,102,241,0.08); border-bottom:1px solid rgba(99,102,241,0.2); display:flex; align-items:center; gap:0.6rem; color:var(--indigo); font-size:0.82rem; font-weight:600;">
-    <i class="bi bi-mortarboard-fill" style="font-size:1.1rem; color:var(--indigo);"></i>
+    <i class="bi bi-award-fill" style="font-size:1.1rem; color:var(--indigo);"></i>
     <div>
-      <strong>Peringatan Kenaikan Pangkat/Golongan Dosen:</strong> Terdapat <strong><?php echo count($dosen_due_list); ?></strong> dosen yang sudah waktunya atau mendekati jadwal kenaikan pangkat/penyetaraan golongan.
+      <strong>Peringatan Kenaikan Pangkat/Golongan Pegawai:</strong> Terdapat <strong><?php echo count($pegawai_due_list); ?></strong> pegawai (Dosen / Tendik) yang sudah waktunya atau mendekati jadwal kenaikan pangkat/penyetaraan golongan.
     </div>
   </div>
   <?php endif; ?>
@@ -97,7 +97,7 @@ $status_badge_cls = [
           <th>Nama Pegawai</th>
           <th>NIP</th>
           <th>Status & Jabatan</th>
-          <th>Peringatan Naik Pangkat Dosen</th>
+          <th>Peringatan Naik Pangkat / Golongan</th>
           <th>Pemberitahuan Pensiun</th>
           <th style="text-align:right;">Aksi</th>
         </tr>
@@ -107,7 +107,7 @@ $status_badge_cls = [
           $sc = $status_badge_cls[$r['status_kepegawaian'] ?? 'PNS'] ?? 'purple';
           $mk = hitung_masa_kerja($r['tanggal_masuk_kerja'] ?? null);
           $pi = hitung_status_pensiun($r['tanggal_lahir'] ?? null, $r['status_kepegawaian'] ?? '', $r['jabatan_fungsional'] ?? '');
-          $kd = hitung_kenaikan_pangkat_dosen($r);
+          $kd = hitung_kenaikan_pangkat_pegawai($r);
         ?>
         <tr>
           <td style="color:var(--text-faint);font-size:.75rem;font-weight:800;"><?php echo $no++; ?></td>
@@ -130,15 +130,15 @@ $status_badge_cls = [
             <?php endif; ?>
           </td>
           <td>
-            <?php if ($kd['is_dosen']): ?>
+            <?php if (!empty($kd['status_text'])): ?>
               <span class="e-badge <?php echo $kd['badge_class']; ?>" style="font-size:0.75rem; padding:0.35rem 0.65rem;">
                 <?php echo htmlspecialchars($kd['status_text']); ?>
               </span>
               <div style="font-size:0.7rem; color:var(--text-faint); margin-top:0.2rem;">
-                TMT: <strong><?php echo $kd['tmt_fmt']; ?></strong> &middot; Target: <strong>Gol. <?php echo $kd['target_golongan']; ?></strong>
+                <?php echo $kd['kategori_pegawai']; ?> &middot; TMT: <strong><?php echo $kd['tmt_fmt']; ?></strong> &middot; Target: <strong>Gol. <?php echo $kd['target_golongan']; ?></strong>
               </div>
             <?php else: ?>
-              <span style="font-size:0.75rem; color:var(--text-faint);">— (Bukan Dosen)</span>
+              <span style="font-size:0.75rem; color:var(--text-faint);">—</span>
             <?php endif; ?>
           </td>
           <td>

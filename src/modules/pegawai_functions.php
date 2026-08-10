@@ -410,7 +410,158 @@ function hitung_kenaikan_pangkat_dosen($pegawai) {
         'badge_class'        => $badge_class,
         'detail_msg'         => $detail_msg,
         'catatan'            => $catatan,
+        'kategori_pegawai'   => 'Dosen',
     ];
+}
+
+
+// ── Hitung Peringatan Kenaikan Pangkat Reguler Bagi Tenaga Kependidikan (Tendik)
+/**
+ * Ketentuan Reguler Tendik: Kenaikan Pangkat/Golongan diproses setiap 4 tahun (48 bulan) dari TMT Pangkat.
+ */
+function hitung_kenaikan_pangkat_tendik($pegawai) {
+    if (empty($pegawai)) {
+        return [
+            'is_dosen'          => false,
+            'is_tendik'         => false,
+            'is_due'            => false,
+            'is_upcoming'       => false,
+            'status_text'       => 'Tidak Aktif',
+            'badge_class'       => 'secondary',
+            'detail_msg'        => '',
+            'catatan'           => '',
+            'kategori_pegawai'  => 'Tenaga Kependidikan'
+        ];
+    }
+
+    $tmt_raw = !empty($pegawai['tmt_pangkat']) && $pegawai['tmt_pangkat'] !== '0000-00-00'
+        ? $pegawai['tmt_pangkat']
+        : (!empty($pegawai['tanggal_masuk_kerja']) && $pegawai['tanggal_masuk_kerja'] !== '0000-00-00'
+            ? $pegawai['tanggal_masuk_kerja']
+            : null);
+
+    if (empty($tmt_raw) || $tmt_raw === '0000-00-00') {
+        return [
+            'is_dosen'           => false,
+            'is_tendik'          => true,
+            'jabatan_norm'       => 'Tenaga Kependidikan',
+            'tmt_fmt'            => 'Belum Diisi',
+            'masa_tahun'         => 0,
+            'masa_bulan'         => 0,
+            'masa_detail'        => 'TMT belum diisi',
+            'target_golongan'    => '—',
+            'golongan_saat_ini'  => $pegawai['kepangkatan'] ?? '—',
+            'is_due'             => false,
+            'is_upcoming'        => false,
+            'status_text'        => '⚠️ TMT Pangkat Belum Diisi',
+            'badge_class'        => 'amber',
+            'detail_msg'         => 'Data TMT Pangkat atau Tanggal Masuk Bekerja belum diisi di sistem.',
+            'catatan'            => 'Harap isi TMT Pangkat/Golongan untuk menghitung periode 4 tahun kenaikan pangkat reguler.',
+            'kategori_pegawai'   => 'Tenaga Kependidikan'
+        ];
+    }
+
+    try {
+        $tmt_date = new DateTime($tmt_raw);
+        $today    = new DateTime();
+    } catch (Exception $e) {
+        return [
+            'is_dosen'          => false,
+            'is_tendik'         => true,
+            'is_due'            => false,
+            'is_upcoming'       => false,
+            'status_text'       => 'TMT Invalid',
+            'badge_class'       => 'secondary',
+            'detail_msg'        => '',
+            'catatan'           => '',
+            'kategori_pegawai'  => 'Tenaga Kependidikan'
+        ];
+    }
+
+    $diff = $tmt_date->diff($today);
+    $years = $diff->y;
+    $months = $diff->m;
+    $total_months = ($years * 12) + $months;
+
+    $masa_parts = [];
+    if ($years > 0) $masa_parts[] = "$years thn";
+    if ($months > 0) $masa_parts[] = "$months bln";
+    if (empty($masa_parts)) $masa_parts[] = "0 bln";
+    $masa_detail = implode(' ', $masa_parts);
+
+    $months_list = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
+    $tmt_fmt = $tmt_date->format('d') . ' ' . ($months_list[(int)$tmt_date->format('n')] ?? '') . ' ' . $tmt_date->format('Y');
+
+    $next_map = [
+        'Ia'=>'Ib', 'Ib'=>'Ic', 'Ic'=>'Id', 'Id'=>'IIa',
+        'IIa'=>'IIb', 'IIb'=>'IIc', 'IIc'=>'IId', 'IId'=>'IIIa',
+        'IIIa'=>'IIIb', 'IIIb'=>'IIIc', 'IIIc'=>'IIId', 'IIId'=>'IVa',
+        'IVa'=>'IVb', 'IVb'=>'IVc', 'IVc'=>'IVd', 'IVd'=>'IVe', 'IVe'=>'IVe'
+    ];
+
+    $curr_gol = 'IIa';
+    if (preg_match('/(I{1,3}|IV|V)[a-e]/i', $pegawai['kepangkatan'] ?? '', $matches)) {
+        $found = strtolower($matches[0]);
+        $map = ['iiia'=>'IIIa','iiib'=>'IIIb','iiic'=>'IIIc','iiid'=>'IIId','iva'=>'IVa','ivb'=>'IVb','ivc'=>'IVc','ivd'=>'IVd','ive'=>'IVe','iia'=>'IIa','iib'=>'IIb','iic'=>'IIc','iid'=>'IId','ia'=>'Ia','ib'=>'Ib','ic'=>'Ic','id'=>'Id'];
+        $curr_gol = $map[$found] ?? strtoupper($found);
+    }
+
+    $target_gol = $next_map[$curr_gol] ?? $curr_gol;
+
+    $is_due = false;
+    $is_upcoming = false;
+
+    if ($total_months >= 48) { // >= 4 tahun
+        $is_due = true;
+        $status_text = "⚠️ Waktunya Naik Pangkat (Target: $target_gol)";
+        $badge_class = "danger";
+        $detail_msg = "Masa pangkat saat ini sudah mencapai $masa_detail (>= 4 tahun TMT). Tenaga kependidikan yang bersangkutan sudah waktunya diusulkan kenaikan pangkat/golongan reguler ke $target_gol.";
+        $catatan = "Ketentuan Reguler Tendik: Kenaikan pangkat diusulkan setiap 4 tahun sekali berdasarkan penilaian kinerja (SKP) dan kelengkapan berkas.";
+    } elseif ($total_months >= 42) { // 3.5 - 4 tahun (sisa <= 6 bulan)
+        $sisa_bln = 48 - $total_months;
+        $is_upcoming = true;
+        $status_text = "⚡ Mendekati Naik Pangkat (Sisa $sisa_bln bln)";
+        $badge_class = "warning";
+        $detail_msg = "Mendekati masa 4 tahun kenaikan pangkat/golongan reguler ($target_gol) dalam $sisa_bln bulan lagi.";
+        $catatan = "Persiapkan kelengkapan berkas administrasi dan Penilaian Prestasi Kerja (SKP) menjelang periode usulan kenaikan pangkat.";
+    } else {
+        $sisa_bln = 48 - $total_months;
+        $status_text = "✅ Pangkat/Golongan Aktif ($curr_gol)";
+        $badge_class = "green";
+        $detail_msg = "Pangkat/Golongan saat ini ($curr_gol) masih aktif (Masa Pangkat: $masa_detail). Kenaikan pangkat reguler berikutnya diperkirakan $sisa_bln bulan lagi.";
+        $catatan = "Kenaikan Pangkat Reguler berikutnya ($target_gol) akan diusulkan setelah genap 4 tahun TMT Pangkat.";
+    }
+
+    return [
+        'is_dosen'           => false,
+        'is_tendik'          => true,
+        'jabatan_norm'       => !empty($pegawai['jabatan_fungsional']) ? $pegawai['jabatan_fungsional'] : 'Tenaga Kependidikan',
+        'tmt_fmt'            => $tmt_fmt,
+        'masa_tahun'         => $years,
+        'masa_bulan'         => $months,
+        'masa_detail'        => $masa_detail,
+        'target_golongan'    => $target_gol,
+        'next_target'        => $target_gol,
+        'golongan_saat_ini'  => $curr_gol,
+        'is_due'             => $is_due,
+        'is_upcoming'        => $is_upcoming,
+        'status_text'        => $status_text,
+        'badge_class'        => $badge_class,
+        'detail_msg'         => $detail_msg,
+        'catatan'            => $catatan,
+        'kategori_pegawai'   => 'Tenaga Kependidikan'
+    ];
+}
+
+/**
+ * Wrapper Utama: Hitung Kenaikan Pangkat Pegawai (Dosen & Tenaga Kependidikan)
+ */
+function hitung_kenaikan_pangkat_pegawai($pegawai) {
+    $kd = hitung_kenaikan_pangkat_dosen($pegawai);
+    if ($kd['is_dosen']) {
+        return $kd;
+    }
+    return hitung_kenaikan_pangkat_tendik($pegawai);
 }
 
 

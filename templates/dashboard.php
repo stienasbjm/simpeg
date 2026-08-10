@@ -248,13 +248,13 @@ if ($is_admin_role):
 </div>
 
 <?php
-// Ambil daftar dosen yang sudah waktunya/mendekati kenaikan pangkat
+// Ambil daftar pegawai (Dosen & Tendik) yang sudah waktunya/mendekati kenaikan pangkat
 $all_pegawai_dash = get_all_pegawai($conn);
-$dosen_alerts = [];
+$pegawai_alerts = [];
 foreach ($all_pegawai_dash as $peg) {
-    $kd = hitung_kenaikan_pangkat_dosen($peg);
-    if ($kd['is_dosen'] && ($kd['is_due'] || $kd['is_upcoming'])) {
-        $dosen_alerts[] = [
+    $kd = hitung_kenaikan_pangkat_pegawai($peg);
+    if ($kd['is_due'] || $kd['is_upcoming']) {
+        $pegawai_alerts[] = [
             'pegawai' => $peg,
             'kd'      => $kd
         ];
@@ -262,38 +262,41 @@ foreach ($all_pegawai_dash as $peg) {
 }
 ?>
 
-<?php if (!empty($dosen_alerts)): ?>
-<!-- Widget Peringatan Kenaikan Pangkat/Golongan Dosen -->
+<?php if (!empty($pegawai_alerts)): ?>
+<!-- Widget Peringatan Kenaikan Pangkat/Golongan Pegawai (Dosen & Tendik) -->
 <div class="e-card mb-4" style="border:1px solid rgba(99,102,241,0.3);">
   <div class="e-card-header" style="background:linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.04));">
     <div class="e-card-title">
-      <i class="bi bi-mortarboard-fill" style="color:var(--indigo); font-size:1.15rem;"></i>
-      Peringatan Kenaikan Pangkat / Golongan Dosen (Penyetaraan Kemendikbud)
+      <i class="bi bi-award-fill" style="color:var(--indigo); font-size:1.15rem;"></i>
+      Peringatan Kenaikan Pangkat / Golongan Pegawai (Dosen &amp; Tenaga Kependidikan)
     </div>
-    <span class="e-badge danger"><?php echo count($dosen_alerts); ?> Dosen Perlu Perhatian</span>
+    <span class="e-badge danger"><?php echo count($pegawai_alerts); ?> Pegawai Perlu Perhatian</span>
   </div>
   <div class="e-card-body" style="padding:0;">
     <div style="overflow-x:auto;">
       <table class="e-table" style="font-size:.85rem;">
         <thead>
           <tr>
-            <th>Nama Dosen & NIP</th>
-            <th>Jabatan Akademik</th>
-            <th>TMT Jabatan / Masa</th>
+            <th>Nama Pegawai & NIP</th>
+            <th>Kategori & Jabatan</th>
+            <th>TMT / Masa Pangkat</th>
             <th>Gol. Saat Ini</th>
-            <th>Penyetaraan Tunjangan (Target)</th>
+            <th>Target Golongan</th>
             <th>Status Kenaikan Pangkat</th>
             <th style="text-align:right;">Aksi</th>
           </tr>
         </thead>
         <tbody>
-          <?php foreach ($dosen_alerts as $item): $p = $item['pegawai']; $k = $item['kd']; ?>
+          <?php foreach ($pegawai_alerts as $item): $p = $item['pegawai']; $k = $item['kd']; ?>
           <tr>
             <td>
               <strong style="color:var(--text-primary);display:block;"><?php echo htmlspecialchars($p['nama']); ?></strong>
               <span class="e-badge-mono" style="font-size:.7rem;"><?php echo htmlspecialchars($p['nip']); ?></span>
             </td>
-            <td><span class="e-badge purple"><?php echo htmlspecialchars($k['jabatan_norm']); ?></span></td>
+            <td>
+              <span class="e-badge <?php echo $k['is_dosen'] ? 'purple' : 'green'; ?>"><?php echo htmlspecialchars($k['kategori_pegawai']); ?></span>
+              <div style="font-size:.72rem; color:var(--text-muted); margin-top:.15rem;"><?php echo htmlspecialchars($k['jabatan_norm']); ?></div>
+            </td>
             <td>
               <div><?php echo $k['tmt_fmt']; ?></div>
               <div style="font-size:.72rem; color:var(--indigo); font-weight:600;">Masa: <?php echo $k['masa_detail']; ?></div>
@@ -307,7 +310,7 @@ foreach ($all_pegawai_dash as $peg) {
             </td>
             <td style="text-align:right;">
               <a href="<?php echo BASE_URL; ?>pegawai_detail?id=<?php echo $p['id']; ?>" class="e-btn e-btn-ghost" style="padding:.25rem .55rem; font-size:.75rem;">
-                <i class="bi bi-eye-fill"></i> Detail Dosen
+                <i class="bi bi-eye-fill"></i> Detail Pegawai
               </a>
             </td>
           </tr>
