@@ -235,17 +235,6 @@ $is_keuangan_active = in_array($current, $keuangan_matches);
 
     </ul>
 
-    <!-- Sistem -->
-    <div class="e-nav-label" style="margin-top:1.25rem;">Sistem</div>
-    <ul class="e-nav">
-      <li>
-        <a class="e-nav-link is-logout" href="<?php echo BASE_URL; ?>logout">
-          <div class="nav-icon"><i class="bi bi-box-arrow-right"></i></div>
-          <span>Logout</span>
-        </a>
-      </li>
-    </ul>
-
   </div>
 </nav>
 

@@ -2086,3 +2086,44 @@ input[type="password"].e-input-field,
 .e-btn-danger:hover {
   background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
 }
+
+/* Modern Topbar Logout Button & Hover Animation */
+.e-btn-logout-topbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.9rem;
+  border-radius: var(--r-md, 8px);
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444 !important;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none !important;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);
+}
+
+.e-btn-logout-topbar i {
+  transition: transform 0.25s ease;
+  font-size: 0.95rem;
+}
+
+.e-btn-logout-topbar:hover {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35) !important;
+}
+
+.e-btn-logout-topbar:hover i {
+  transform: translateX(2px) scale(1.1);
+}
+
+.e-btn-logout-topbar:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2) !important;
+}
