@@ -1,4 +1,21 @@
-# Temporary files
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment and sensitive keys
+.env
+.env.local
+.env.*.local
+server/.env
+client/.env
+
+# Build outputs
+client/dist/
+dist/
+
+# Temporary files & logs
 tmp/
 *.log
 *.zip
