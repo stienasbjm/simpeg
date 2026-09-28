@@ -222,9 +222,8 @@ CREATE INDEX IF NOT EXISTS idx_gaji_periode ON gaji(bulan, tahun);
 
 -- =============================================================================
 -- 12. DEFAULT SEED USERS & DATA CONTOH
--- Password untuk semua akun default: admin123
--- Hash bcrypt (10 rounds): $2a$10$vI8aWBnW3fID.ZQ4/zo1G.q1lR5e0u8G.l51T.tU2B8j3QW0F1QfG
--- Password 'admin': $2a$10$wT8e1W4z4VjU4Psq7rFz.e/P8v1b5/qjUe5i5Wc8mC9g1D8G0bIqm
+-- Password untuk semua akun default: admin
+-- Hash bcrypt (10 rounds): $2a$10$U2rJzFzY5GZz8j8qJ.OqUOHyEfxkRvyNf0mY0/uG93I0iA9m1bY52
 -- =============================================================================
 
 -- Seed Pegawai Awal
@@ -245,10 +244,3 @@ VALUES
 ('developer', '$2a$10$U2rJzFzY5GZz8j8qJ.OqUOHyEfxkRvyNf0mY0/uG93I0iA9m1bY52', 'Developer System', 'developer', TRUE),
 ('bendahara', '$2a$10$U2rJzFzY5GZz8j8qJ.OqUOHyEfxkRvyNf0mY0/uG93I0iA9m1bY52', 'Siti Rahmawati (Bendahara)', 'bendahara', TRUE)
 ON CONFLICT (username) DO NOTHING;
-
--- Storage Buckets Configuration Note:
--- Create 4 public/private buckets in Supabase Storage dashboard:
--- 1. dokumen-pegawai (Public / Private)
--- 2. surat-masuk (Public / Private)
--- 3. surat-keluar (Public / Private)
--- 4. surat-keputusan (Public / Private)
