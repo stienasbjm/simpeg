@@ -24,7 +24,7 @@ app.use(helmet());
 // CORS: Izinkan request dari frontend
 app.use(cors({
   origin: [
-    process.env.CLIENT_URL || 'http://localhost:5173',
+    process.env.CLIENT_URL || 'https://stienasbjm.github.io/simpeg/',
     'http://localhost:3000',
     /\.onrender\.com$/,   // Render.com domains
     /\.vercel\.app$/,     // Vercel domains
