@@ -1,11 +1,22 @@
-# Temporary files
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment and sensitive keys
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+public/uploads/
+
+# Temporary files & logs
 tmp/
 *.log
 *.zip
-.env
-.env.local
-node_modules/
-dist/
 
 # IDE and OS files
 .DS_Store

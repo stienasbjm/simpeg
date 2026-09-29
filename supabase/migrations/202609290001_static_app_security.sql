@@ -1,3 +1,10 @@
+    pegawai_id BIGINT UNIQUE REFERENCES public.pegawai(id) ON DELETE SET NULL,
+RETURNS BIGINT
+DECLARE employee_id BIGINT := public.current_pegawai_id();
+    employee_id BIGINT := public.current_pegawai_id();
+CREATE OR REPLACE FUNCTION public.review_leave(p_request_id BIGINT, p_status TEXT, p_note TEXT DEFAULT '')
+REVOKE ALL ON FUNCTION public.review_leave(BIGINT, TEXT, TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.review_leave(BIGINT, TEXT, TEXT) TO authenticated;
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT NOT NULL UNIQUE,
@@ -43,6 +50,7 @@ GRANT EXECUTE ON FUNCTION public.current_pegawai_id() TO authenticated;
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pegawai_dokumen ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pegawai ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.absensi ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pengajuan_izin ENABLE ROW LEVEL SECURITY;
@@ -61,6 +69,19 @@ CREATE POLICY profiles_read_self_or_developer ON public.profiles
 DROP POLICY IF EXISTS users_no_client_access ON public.users;
 CREATE POLICY users_no_client_access ON public.users
     FOR ALL TO anon, authenticated USING (false) WITH CHECK (false);
+
+DROP POLICY IF EXISTS employee_documents_read_own_or_admin ON public.pegawai_dokumen;
+CREATE POLICY employee_documents_read_own_or_admin ON public.pegawai_dokumen
+    FOR SELECT TO authenticated
+    USING (
+        public.current_app_role() IN ('admin', 'developer')
+        OR pegawai_id = public.current_pegawai_id()
+    );
+DROP POLICY IF EXISTS employee_documents_manage_admin ON public.pegawai_dokumen;
+CREATE POLICY employee_documents_manage_admin ON public.pegawai_dokumen
+    FOR ALL TO authenticated
+    USING (public.current_app_role() IN ('admin', 'developer'))
+    WITH CHECK (public.current_app_role() IN ('admin', 'developer'));
 
 DROP POLICY IF EXISTS pegawai_read_roles ON public.pegawai;
 CREATE POLICY pegawai_read_roles ON public.pegawai
