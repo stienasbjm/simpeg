@@ -6,16 +6,17 @@ Frontend baru menggunakan React/Vite dan Supabase JavaScript client. GitHub Page
 
 1. Pada project Supabase yang masih kosong, jalankan `supabase/schema.sql` melalui SQL Editor.
 2. Jalankan `supabase/migrations/202609290001_static_app_security.sql` setelah skema selesai dibuat. Migrasi ini memasang RLS, profil Auth, Storage privat, dan RPC untuk absensi, izin, serta pembaruan profil.
-3. Buat user pertama di **Authentication > Users**. Lalu tautkan user itu sebagai developer melalui SQL Editor, ganti email dan username pada query:
+3. Jalankan `supabase/migrations/202609290001_static_app_security.sql` setelah skema selesai dibuat.
+4. Jalankan `supabase/migrations/202609290002_auth_profile_provisioning.sql`. Migrasi ini membuat profil otomatis untuk user Auth baru dan mengisi profil bagi user yang sudah terlanjur dibuat. User mendapat role terendah `pegawai`; role super-admin tidak pernah diberikan otomatis.
+5. Jika user pertama sudah ada, cari berdasarkan email dan promosikan akun tersebut menjadi developer melalui SQL Editor. Ganti email pada query sesuai email Auth:
 
 ```sql
-INSERT INTO public.profiles (id, email, username, nama_lengkap, role)
-SELECT id, email, 'developer', 'Developer', 'developer'
-FROM auth.users
+UPDATE public.profiles
+SET role = 'developer'
 WHERE email = 'email-developer-anda@example.com';
 ```
 
-Password/hash dari tabel `users` PHP lama tidak dipakai oleh Supabase Auth. Buat ulang akun melalui menu manajemen akun setelah developer pertama tersedia. Data MySQL dan berkas lokal juga tidak berpindah otomatis; migrasikan data pegawai terlebih dahulu sebelum membuat profil akun pegawai.
+Jika query tidak mengubah baris, pastikan email sama persis dengan email pada **Authentication > Users** dan migration kedua berhasil. Setelah menjalankan migration, keluar lalu masuk kembali ke aplikasi. Password/hash dari tabel `users` PHP lama tidak dipakai oleh Supabase Auth. Buat akun lain melalui menu manajemen akun setelah developer pertama tersedia. Data MySQL dan berkas lokal juga tidak berpindah otomatis; migrasikan data pegawai terlebih dahulu sebelum menghubungkan akun pegawai.
 
 ## Deploy Edge Function
 

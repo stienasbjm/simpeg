@@ -1,3 +1,8 @@
+        pegawai_id BIGINT UNIQUE REFERENCES public.pegawai(id) ON DELETE SET NULL,
+    RETURNS BIGINT
+    DECLARE employee_id BIGINT := public.current_pegawai_id();
+        employee_id BIGINT := public.current_pegawai_id();
+    CREATE OR REPLACE FUNCTION public.review_leave(p_request_id BIGINT, p_status TEXT, p_note TEXT DEFAULT '')
     pegawai_id BIGINT UNIQUE REFERENCES public.pegawai(id) ON DELETE SET NULL,
 RETURNS BIGINT
 DECLARE employee_id BIGINT := public.current_pegawai_id();

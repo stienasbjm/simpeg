@@ -288,6 +288,7 @@ function App() {
   const [route, setRoute] = useState(routeName());
   const [loading, setLoading] = useState(true);
   const [profileError, setProfileError] = useState("");
+  const [profileRetry, setProfileRetry] = useState(0);
 
   useEffect(() => {
     document.documentElement.dataset.bsTheme = localStorage.getItem("earsip-theme") || "light";
@@ -323,8 +324,15 @@ function App() {
       .single()
       .then(({ data, error }) => {
         if (!active) return;
-        if (error) setProfileError("Profil aplikasi belum terhubung ke akun Supabase Auth. Jalankan migrasi Supabase dan tautkan akun pengguna terlebih dahulu.");
-        else {
+        if (error) {
+          if (error.code === "PGRST116") {
+            setProfileError("Akun Auth ditemukan, tetapi baris profil aplikasi belum ada. Jalankan migration 202609290002_auth_profile_provisioning.sql di Supabase SQL Editor, lalu keluar dan masuk kembali.");
+          } else if (error.code === "42P01" || error.code === "PGRST205") {
+            setProfileError("Tabel profiles belum tersedia. Jalankan supabase/schema.sql, lalu migration 202609290001_static_app_security.sql dan 202609290002_auth_profile_provisioning.sql secara berurutan.");
+          } else {
+            setProfileError(`Profil belum dapat dibaca (kode ${error.code || "tidak diketahui"}). Periksa migration RLS Supabase; bila baru diperbaiki, coba muat ulang profil.`);
+          }
+        } else {
           setProfile(data);
           setProfileError("");
         }
@@ -332,7 +340,7 @@ function App() {
     return () => {
       active = false;
     };
-  }, [session]);
+  }, [session, profileRetry]);
 
   async function logout() {
     await supabase.auth.signOut();
@@ -353,6 +361,9 @@ function App() {
       <div className="e-empty">
         <h1>Akun belum terhubung</h1>
         <p>{profileError}</p>
+        <button className="e-btn e-btn-primary" onClick={() => setProfileRetry((value) => value + 1)}>
+          <i className="bi bi-arrow-clockwise" />Coba lagi
+        </button>
         <button className="e-btn e-btn-ghost" onClick={logout}>
           Keluar
         </button>
