@@ -1,0 +1,181 @@
+.print-page {
+  min-height: 100vh;
+  background: #f1f5f9;
+  padding: 1.5rem;
+  color: #1e293b;
+  font:
+    14px/1.5 Arial,
+    sans-serif;
+}
+.print-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  max-width: 850px;
+  margin: 0 auto 1rem;
+}
+.print-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1rem;
+  border: 0;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+.print-button.secondary {
+  background: #64748b;
+}
+.report-sheet,
+.slip-sheet {
+  max-width: 850px;
+  margin: 0 auto 2rem;
+  padding: 2rem;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+}
+.report-sheet header,
+.slip-sheet header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 2px solid #0f172a;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+.report-sheet header img,
+.slip-sheet header img {
+  width: auto;
+  height: 52px;
+  object-fit: contain;
+}
+.report-sheet h1,
+.slip-sheet h1 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+.report-sheet p,
+.slip-sheet header p {
+  margin: 0.15rem 0 0;
+  color: #64748b;
+}
+.report-sheet table,
+.slip-sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+.report-sheet th,
+.report-sheet td,
+.slip-sheet th,
+.slip-sheet td {
+  border: 1px solid #cbd5e1;
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+}
+.report-sheet th,
+.slip-sheet th {
+  background: #0f172a;
+  color: #fff;
+}
+.report-sheet tfoot th {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+.slip-label {
+  margin-left: auto;
+  padding: 0.35rem 0.7rem;
+  border-radius: 16px;
+  background: #e0e7ff;
+  color: #3730a3;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+.slip-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem 1.4rem;
+  padding: 1rem;
+  background: #f1f5f9;
+}
+.slip-meta small,
+.slip-meta strong,
+.signatures span,
+.signatures strong,
+.signatures small {
+  display: block;
+}
+.slip-meta small,
+.signatures span,
+.signatures small {
+  color: #64748b;
+}
+.section-row td {
+  background: #f8fafc;
+  color: #15803d;
+  font-weight: 900;
+}
+.subtotal td {
+  font-weight: 800;
+  background: #f8fafc;
+}
+.take-home {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 2px dashed #059669;
+  background: #ecfdf5;
+  color: #047857;
+}
+.take-home b {
+  font-size: 1.4rem;
+}
+.signatures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+  text-align: center;
+}
+.signature-space {
+  height: 60px;
+}
+.slip-sheet footer {
+  text-align: right;
+  margin-top: 1rem;
+}
+.print-empty {
+  max-width: 850px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  text-align: center;
+}
+@media print {
+  .print-page {
+    padding: 0;
+    background: #fff;
+  }
+  .print-toolbar {
+    display: none;
+  }
+  .report-sheet,
+  .slip-sheet {
+    max-width: 100%;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    page-break-after: always;
+  }
+  @page {
+    size: A4 landscape;
+    margin: 1.2cm;
+  }
+}

@@ -2,6 +2,10 @@
 tmp/
 *.log
 *.zip
+.env
+.env.local
+node_modules/
+dist/
 
 # IDE and OS files
 .DS_Store

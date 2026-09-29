@@ -33,7 +33,7 @@ function get_all_kas($conn, $jenis_kas = null, $bulan = null, $tahun = null) {
     if (!empty($where)) {
         $sql .= " WHERE " . implode(" AND ", $where);
     }
-    $sql .= " ORDER BY tanggal DESC, id DESC";
+    $sql .= " ORDER BY k.tanggal DESC, k.id DESC";
 
     $stmt = $conn->prepare($sql);
     if (!empty($params)) {
