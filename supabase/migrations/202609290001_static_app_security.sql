@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     username TEXT NOT NULL UNIQUE,
     nama_lengkap TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('admin', 'developer', 'bendahara', 'pegawai')),
-    pegawai_id INTEGER UNIQUE REFERENCES public.pegawai(id) ON DELETE SET NULL,
+    pegawai_id BIGINT UNIQUE REFERENCES public.pegawai(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

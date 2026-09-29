@@ -6,9 +6,10 @@ Frontend baru menggunakan React/Vite dan Supabase JavaScript client. GitHub Page
 
 1. Pada project Supabase yang masih kosong, jalankan `supabase/schema.sql` melalui SQL Editor.
 2. Jalankan `supabase/migrations/202609290001_static_app_security.sql` setelah skema selesai dibuat. Migrasi ini memasang RLS, profil Auth, Storage privat, dan RPC untuk absensi, izin, serta pembaruan profil.
-3. Jalankan `supabase/migrations/202609290001_static_app_security.sql` setelah skema selesai dibuat.
-4. Jalankan `supabase/migrations/202609290002_auth_profile_provisioning.sql`. Migrasi ini membuat profil otomatis untuk user Auth baru dan mengisi profil bagi user yang sudah terlanjur dibuat. User mendapat role terendah `pegawai`; role super-admin tidak pernah diberikan otomatis.
-5. Jika user pertama sudah ada, cari berdasarkan email dan promosikan akun tersebut menjadi developer melalui SQL Editor. Ganti email pada query sesuai email Auth:
+3. Pada project Supabase yang masih kosong, jalankan `supabase/schema.sql` melalui SQL Editor. Jangan jalankan ulang schema ini jika tabel sudah ada; script schema ditujukan untuk project baru.
+4. Jalankan `supabase/migrations/202609290001_static_app_security.sql` setelah skema selesai dibuat. Kolom `profiles.pegawai_id` menggunakan `BIGINT`, sama dengan `pegawai.id`.
+5. Jalankan `supabase/migrations/202609290002_auth_profile_provisioning.sql`. Migrasi ini membuat profil otomatis untuk user Auth baru dan mengisi profil bagi user yang sudah terlanjur dibuat. User mendapat role terendah `pegawai`; role super-admin tidak pernah diberikan otomatis.
+6. Jika user pertama sudah ada, cari berdasarkan email dan promosikan akun tersebut menjadi developer melalui SQL Editor. Ganti email pada query sesuai email Auth:
 
 ```sql
 UPDATE public.profiles
