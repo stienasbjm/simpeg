@@ -10,6 +10,7 @@ npm run dev
 ```
 
 Atur `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` pada `.env.local`.
+Atur `VITE_SUPABASE_URL` dan `VITE_SUPABASE_PUBLISHABLE_KEY` pada `.env.local`.
 
 ## Siapkan Supabase
 
@@ -24,7 +25,9 @@ Tidak ada kredensial default. Buat password sendiri di Supabase Auth. Jangan gun
 ## GitHub Pages
 
 Tambahkan repository Actions Variables `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY`, lalu atur **Settings > Pages > Source: GitHub Actions**. Push ke `main` akan menjalankan `.github/workflows/pages.yml`.
+Tambahkan repository Actions Variables `VITE_SUPABASE_URL` dan `VITE_SUPABASE_PUBLISHABLE_KEY`, lalu atur **Settings > Pages > Source: GitHub Actions**. Push ke `main` akan menjalankan `.github/workflows/pages.yml`.
 
 Supabase anon key bersifat public dan dibundel ke browser; akses data wajib dibatasi oleh RLS. `service_role` hanya boleh berada di Supabase Edge Function. Folder `public/uploads/` lokal diabaikan Git untuk mencegah foto/dokumen pegawai terpublikasi.
+Supabase publishable key bersifat public dan dibundel ke browser; akses data wajib dibatasi oleh RLS. Secret/service-role key hanya boleh berada di environment server tepercaya seperti Edge Function. Folder `public/uploads/` lokal diabaikan Git untuk mencegah foto/dokumen pegawai terpublikasi.
 
 Build statis tersedia di `dist/` setelah `npm run build`.

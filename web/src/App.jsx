@@ -351,7 +351,7 @@ function App() {
     return (
       <div className="e-empty">
         <h1>Konfigurasi Supabase belum tersedia</h1>
-        <p>Tambahkan VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY ke environment build.</p>
+        <p>Tambahkan VITE_SUPABASE_URL dan VITE_SUPABASE_PUBLISHABLE_KEY ke environment build.</p>
       </div>
     );
   if (loading) return <div className="e-empty">Memuat SIMPEG…</div>;
@@ -362,7 +362,8 @@ function App() {
         <h1>Akun belum terhubung</h1>
         <p>{profileError}</p>
         <button className="e-btn e-btn-primary" onClick={() => setProfileRetry((value) => value + 1)}>
-          <i className="bi bi-arrow-clockwise" />Coba lagi
+          <i className="bi bi-arrow-clockwise" />
+          Coba lagi
         </button>
         <button className="e-btn e-btn-ghost" onClick={logout}>
           Keluar
