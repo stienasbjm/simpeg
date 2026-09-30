@@ -531,7 +531,7 @@ function App() {
         ) : (
           <div className="e-empty">
             <h1>{allowedNavigation.find((item) => item.route === route)?.label || "Halaman tidak ditemukan"}</h1>
-            <p>Fitur ini sedang dipindahkan dari PHP ke JavaScript.</p>
+            <p>Halaman atau fitur ini belum tersedia.</p>
           </div>
         )}
       </main>

@@ -1,6 +1,6 @@
 # Supabase dan GitHub Pages
 
-Frontend SIMPEG memakai React/Vite dan Supabase JavaScript client. GitHub Pages hanya menyajikan file statis; PHP dan server Node lama tidak dijalankan.
+Frontend SIMPEG adalah aplikasi web murni berbasis React/Vite (JavaScript) dan Supabase Client (Auth, Database PostgreSQL, dan Storage) yang di-deploy sebagai file statis di GitHub Pages.
 
 ## Setup database
 

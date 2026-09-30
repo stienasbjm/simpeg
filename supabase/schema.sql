@@ -1,6 +1,6 @@
 -- SIMPEG schema for the static React/Supabase application.
 -- Run on a new Supabase project before the security migration.
--- This keeps legacy employee/document/payroll fields and adds fields used by the PHP-to-JS UI.
+-- Schema definition for SIMPEG PostgreSQL database and Supabase client.
 -- No default users or passwords are seeded. Create Auth users explicitly.
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
