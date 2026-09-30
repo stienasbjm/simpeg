@@ -1,8 +1,7 @@
-    VALUES (NEW.id, COALESCE(NEW.email, NEW.id::TEXT || '@phone.local'), safe_username, safe_name, 'pegawai', linked_employee_id)
-            COALESCE(auth_user.email, auth_user.id::TEXT || '@phone.local'),
 -- Ensure every Supabase Auth user has an application profile.
 -- New profiles receive the least-privileged role; privileged roles are assigned
 -- explicitly by a trusted project owner through the Supabase SQL Editor.
+
 
 ALTER TABLE public.profiles
     ALTER COLUMN pegawai_id TYPE BIGINT USING pegawai_id::BIGINT;

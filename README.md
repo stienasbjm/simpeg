@@ -1,33 +1,43 @@
-# SIMPEG
+# SIMPEG - STIE Nasional Banjarmasin
 
-Aplikasi statis React/Vite untuk GitHub Pages dengan Supabase Auth, PostgreSQL API, dan Storage. UI memakai stylesheet lama pada `public/css/style.css` dan aset merek di `public/images/`.
+Aplikasi web kepegawaian (SIMPEG) berbasis React + Vite dan Supabase (Auth, Database PostgreSQL via PostgREST, dan Storage), dirancang khusus untuk di-deploy secara statis di **GitHub Pages**.
 
-## Jalankan lokal
+## Pengembangan Lokal
 
-```sh
-npm ci
-npm run dev
-```
+1. Salin `.env.example` ke `.env.local` (atau gunakan `.env` yang sudah disiapkan):
+   ```sh
+   VITE_SUPABASE_URL=https://ploutblidwenynluiudl.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_vFXBocNtcHsH973-IThzgQ_Busq65uT
+   ```
+2. Jalankan aplikasi:
+   ```sh
+   npm ci
+   npm run dev
+   ```
+3. Buka browser pada alamat yang ditampilkan (misalnya `http://localhost:5173/`).
 
-Atur `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY` pada `.env.local`.
-Atur `VITE_SUPABASE_URL` dan `VITE_SUPABASE_PUBLISHABLE_KEY` pada `.env.local`.
+## Setup Supabase
 
-## Siapkan Supabase
+Jalankan script SQL berikut secara berurutan di **Supabase Dashboard > SQL Editor**:
 
-1. Jalankan `supabase/schema.sql` pada project baru.
-2. Jalankan `supabase/migrations/202609290001_static_app_security.sql`.
-3. Buat user pertama dari Supabase Dashboard > Authentication > Users.
-4. Tautkan user pertama sebagai role `developer` memakai query di [SUPABASE.md](SUPABASE.md). Role `developer` adalah super-admin aplikasi.
-5. Deploy Edge Function `manage-account` mengikuti panduan Supabase.
+1. `supabase/schema.sql` (membuat tabel-tabel utama: pegawai, surat, absensi, kas, gaji, dll.)
+2. `supabase/migrations/202609290001_static_app_security.sql` (membuat tabel profiles, RLS security policies, RPC functions, dan private storage bucket `simpeg-private`)
+3. `supabase/migrations/202609290002_auth_profile_provisioning.sql` (membuat trigger otomatis profil saat user baru mendaftar)
+4. Buat user pertama di **Authentication > Users** (misal: `admin@stienas-ypb.ac.id`), lalu jadikan developer (super-admin) dengan SQL:
+   ```sql
+   UPDATE public.profiles
+   SET role = 'developer'
+   WHERE email = 'admin@stienas-ypb.ac.id';
+   ```
 
-Tidak ada kredensial default. Buat password sendiri di Supabase Auth. Jangan gunakan password/API service-role key dalam source, issue, atau chat.
+Lihat detail lengkap di [SUPABASE.md](SUPABASE.md).
 
-## GitHub Pages
+## Deploy ke GitHub Pages
 
-Tambahkan repository Actions Variables `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY`, lalu atur **Settings > Pages > Source: GitHub Actions**. Push ke `main` akan menjalankan `.github/workflows/pages.yml`.
-Tambahkan repository Actions Variables `VITE_SUPABASE_URL` dan `VITE_SUPABASE_PUBLISHABLE_KEY`, lalu atur **Settings > Pages > Source: GitHub Actions**. Push ke `main` akan menjalankan `.github/workflows/pages.yml`.
-
-Supabase anon key bersifat public dan dibundel ke browser; akses data wajib dibatasi oleh RLS. `service_role` hanya boleh berada di Supabase Edge Function. Folder `public/uploads/` lokal diabaikan Git untuk mencegah foto/dokumen pegawai terpublikasi.
-Supabase publishable key bersifat public dan dibundel ke browser; akses data wajib dibatasi oleh RLS. Secret/service-role key hanya boleh berada di environment server tepercaya seperti Edge Function. Folder `public/uploads/` lokal diabaikan Git untuk mencegah foto/dokumen pegawai terpublikasi.
-
-Build statis tersedia di `dist/` setelah `npm run build`.
+1. Pastikan repository di GitHub sudah memiliki remote yang benar (`origin`).
+2. Di GitHub repository, buka **Settings > Pages**:
+   - Di bagian **Build and deployment > Source**, pilih **GitHub Actions**.
+3. (Opsional, sudah ada nilai bawaan) Di **Settings > Secrets and variables > Actions > Variables**, tambahkan:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY`
+4. Lakukan `git push origin main`. Workflow GitHub Actions `.github/workflows/pages.yml` akan secara otomatis melakukan build dan mempublikasikan situs ke GitHub Pages.

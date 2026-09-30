@@ -1,15 +1,3 @@
-        pegawai_id BIGINT UNIQUE REFERENCES public.pegawai(id) ON DELETE SET NULL,
-    RETURNS BIGINT
-    DECLARE employee_id BIGINT := public.current_pegawai_id();
-        employee_id BIGINT := public.current_pegawai_id();
-    CREATE OR REPLACE FUNCTION public.review_leave(p_request_id BIGINT, p_status TEXT, p_note TEXT DEFAULT '')
-    pegawai_id BIGINT UNIQUE REFERENCES public.pegawai(id) ON DELETE SET NULL,
-RETURNS BIGINT
-DECLARE employee_id BIGINT := public.current_pegawai_id();
-    employee_id BIGINT := public.current_pegawai_id();
-CREATE OR REPLACE FUNCTION public.review_leave(p_request_id BIGINT, p_status TEXT, p_note TEXT DEFAULT '')
-REVOKE ALL ON FUNCTION public.review_leave(BIGINT, TEXT, TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.review_leave(BIGINT, TEXT, TEXT) TO authenticated;
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT NOT NULL UNIQUE,
@@ -39,7 +27,7 @@ AS $$
 $$;
 
 CREATE OR REPLACE FUNCTION public.current_pegawai_id()
-RETURNS INTEGER
+RETURNS BIGINT
 LANGUAGE SQL
 STABLE
 SECURITY DEFINER
@@ -48,10 +36,22 @@ AS $$
     SELECT pegawai_id FROM public.profiles WHERE id = (SELECT auth.uid())
 $$;
 
+CREATE OR REPLACE FUNCTION public.get_auth_email(p_username TEXT)
+RETURNS TEXT
+LANGUAGE SQL
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+    SELECT email FROM public.profiles WHERE lower(username) = lower(p_username) LIMIT 1;
+$$;
+
 REVOKE ALL ON FUNCTION public.current_app_role() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.current_pegawai_id() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.get_auth_email(TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.current_app_role() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.current_pegawai_id() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_auth_email(TEXT) TO anon, authenticated;
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
@@ -203,7 +203,7 @@ SECURITY DEFINER
 SET search_path = ''
 AS $$
 DECLARE
-    employee_id INTEGER := public.current_pegawai_id();
+    employee_id BIGINT := public.current_pegawai_id();
     local_today DATE := (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Makassar')::DATE;
     local_time TIME := (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Makassar')::TIME;
 BEGIN
@@ -226,7 +226,7 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.review_leave(p_request_id INTEGER, p_status TEXT, p_note TEXT DEFAULT '')
+CREATE OR REPLACE FUNCTION public.review_leave(p_request_id BIGINT, p_status TEXT, p_note TEXT DEFAULT '')
 RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -258,10 +258,10 @@ $$;
 
 REVOKE ALL ON FUNCTION public.record_attendance(TEXT) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.update_employee_profile(TEXT, TEXT, DATE, TEXT, TEXT) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.review_leave(INTEGER, TEXT, TEXT) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.review_leave(BIGINT, TEXT, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.record_attendance(TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.update_employee_profile(TEXT, TEXT, DATE, TEXT, TEXT) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.review_leave(INTEGER, TEXT, TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.review_leave(BIGINT, TEXT, TEXT) TO authenticated;
 
 INSERT INTO storage.buckets (id, name, public, file_size_limit)
 VALUES ('simpeg-private', 'simpeg-private', false, 10485760)

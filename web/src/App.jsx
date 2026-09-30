@@ -41,13 +41,30 @@ function Login({ onSignedIn }) {
     event.preventDefault();
     setBusy(true);
     setError("");
+
+    let email = identifier.trim();
+    if (!email.includes("@")) {
+      try {
+        const { data: lookedUpEmail, error: rpcError } = await supabase.rpc("get_auth_email", { p_username: email });
+        if (!rpcError && lookedUpEmail) {
+          email = lookedUpEmail;
+        } else {
+          setBusy(false);
+          setError(`Username "${identifier.trim()}" tidak ditemukan. Silakan gunakan email yang terdaftar.`);
+          return;
+        }
+      } catch {
+        // Fallback to direct sign in attempt
+      }
+    }
+
     const { data, error: authError } = await supabase.auth.signInWithPassword({
-      email: identifier.trim(),
+      email,
       password,
     });
     setBusy(false);
     if (authError) {
-      setError("Login gagal. Pastikan akun sudah dibuat di Supabase Auth dan gunakan email yang terdaftar.");
+      setError("Login gagal. Pastikan email/username dan password sudah benar.");
       return;
     }
     onSignedIn(data.session);
@@ -107,7 +124,7 @@ function Login({ onSignedIn }) {
             <form onSubmit={submit} autoComplete="on">
               <div className="e-form-group">
                 <div className="e-input-wrapper">
-                  <input className="e-input-field" type="email" value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder="Email" required autoComplete="username" />
+                  <input className="e-input-field" type="text" value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder="Email atau Username" required autoComplete="username" />
                 </div>
               </div>
               <div className="e-form-group">
