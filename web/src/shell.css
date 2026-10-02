@@ -56,13 +56,21 @@
   background: var(--sidebar-active-bg);
 }
 
-.e-resource-form-footer {
+.e-card > .e-card-footer {
   padding: 1.25rem 1.5rem 1.5rem;
 }
 
+.e-card > .e-account-form-footer {
+  padding: 1.5rem 2rem 2rem;
+}
+
 @media (max-width: 576px) {
-  .e-resource-form-footer {
+  .e-card > .e-card-footer {
     padding: 1rem 1rem 1.25rem;
+  }
+
+  .e-card > .e-account-form-footer {
+    padding: 1.25rem 1.25rem 1.5rem;
   }
 }
 

@@ -178,7 +178,7 @@ export default function AccountPage({ route, profile }) {
               </div>
             </div>
           </div>
-          <div className="e-card-footer d-flex gap-2">
+          <div className="e-card-footer e-account-form-footer d-flex gap-2">
             <button className="e-btn e-btn-primary" disabled={busy}>
               <i className="bi bi-save" />
               {busy ? "Menyimpan…" : "Simpan"}

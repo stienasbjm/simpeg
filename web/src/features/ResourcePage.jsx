@@ -332,7 +332,7 @@ function ResourceForm({ resource, mode, id, onDone }) {
                 ))}
             </div>
           </div>
-          <div className="e-card-footer e-resource-form-footer d-flex gap-2">
+          <div className="e-card-footer d-flex gap-2">
             <button className="e-btn e-btn-primary" type="submit" disabled={busy}>
               <i className="bi bi-save" />
               {busy ? "Menyimpan…" : "Simpan"}
