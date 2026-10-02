@@ -332,6 +332,22 @@ function App() {
   }, []);
 
   useEffect(() => {
+    function closeSidebarOutside(event) {
+      const sidebar = document.getElementById("sidebar");
+      const menuButton = document.getElementById("menuBtn");
+      if (sidebar && !sidebar.contains(event.target) && !menuButton?.contains(event.target)) {
+        sidebar.classList.remove("is-open");
+      }
+    }
+    document.addEventListener("click", closeSidebarOutside);
+    return () => document.removeEventListener("click", closeSidebarOutside);
+  }, []);
+
+  useEffect(() => {
+    document.getElementById("sidebar")?.classList.remove("is-open");
+  }, [route]);
+
+  useEffect(() => {
     if (!session) return;
     let active = true;
     supabase
@@ -526,7 +542,7 @@ function App() {
           <FinancePage route={route} />
         ) : route === "kas_print" || route === "slip_gaji_print" ? (
           <FinancePrint route={route} profile={profile} />
-        ) : resources[route] ? (
+        ) : resources[route] || resources[route.replace(/_(?:add|edit|detail)$/, "")] ? (
           <ResourcePage profile={profile} />
         ) : (
           <div className="e-empty">

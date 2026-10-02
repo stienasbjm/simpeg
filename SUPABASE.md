@@ -10,8 +10,10 @@ Lalu jalankan berurutan:
 
 1. `supabase/migrations/202609290001_static_app_security.sql`
 2. `supabase/migrations/202609290002_auth_profile_provisioning.sql`
+3. `supabase/migrations/202610020003_employee_career_monitoring.sql`
+4. `supabase/migrations/202610020004_employee_identifiers.sql`
 
-Migration pertama memasang RLS, Storage privat, dan RPC aplikasi. Kolom `profiles.pegawai_id` bertipe `BIGINT`, sama dengan `pegawai.id`. Migration kedua membuat profil role `pegawai` untuk akun Auth lama yang belum tertaut, dan menyiapkan trigger untuk akun baru. Migration itu tidak memberi role admin/developer secara otomatis.
+Migration pertama memasang RLS, Storage privat, dan RPC aplikasi. Kolom `profiles.pegawai_id` bertipe `BIGINT`, sama dengan `pegawai.id`. Migration kedua membuat profil role `pegawai` untuk akun Auth lama yang belum tertaut, dan menyiapkan trigger untuk akun baru. Migration ketiga menambahkan tanggal pensiun resmi pegawai dan menyelaraskan default status kepegawaian. Migration keempat menambahkan kolom identitas NIDN/NUPTK. Migration tersebut tidak mengubah data lama atau memberi role admin/developer secara otomatis.
 
 Jika akun Auth sudah dibuat, jalankan query verifikasi berikut di SQL Editor:
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../supabase.js";
+import { confirmAction, showAlert } from "../alerts.js";
 
 export default function AccountPage({ route, profile }) {
   const employeeAccounts = route === "akun_pegawai";
@@ -14,7 +15,7 @@ export default function AccountPage({ route, profile }) {
   async function load() {
     const [accountsResult, staffResult] = await Promise.all([
       supabase.from("profiles").select("id, email, username, nama_lengkap, role, pegawai_id, created_at").order("username"),
-      employeeAccounts ? supabase.from("pegawai").select("id, nama, nip").order("nama") : Promise.resolve({ data: [] }),
+      employeeAccounts ? supabase.from("pegawai").select("id, nama, nip, status_kepegawaian").order("nama") : Promise.resolve({ data: [] }),
     ]);
     if (accountsResult.error) setError(accountsResult.error.message);
     else setAccounts((accountsResult.data || []).filter((account) => (employeeAccounts ? account.role === "pegawai" : account.role !== "pegawai")));
@@ -44,7 +45,9 @@ export default function AccountPage({ route, profile }) {
     const { data, error: invokeError } = await supabase.functions.invoke("manage-account", { body: input });
     setBusy(false);
     if (invokeError || data?.error) {
-      setError(data?.error || invokeError.message);
+      const message = data?.error || invokeError.message;
+      setError(message);
+      await showAlert("Akun gagal disimpan", `${message}. Pastikan Edge Function manage-account telah di-deploy.`, "error");
       return;
     }
     setNotice(editing ? "Akun berhasil diperbarui." : "Akun berhasil dibuat.");
@@ -53,16 +56,25 @@ export default function AccountPage({ route, profile }) {
   }
 
   async function remove(account) {
-    if (account.id === profile.id || !window.confirm(`Hapus akun ${account.username}?`)) return;
+    if (account.id === profile.id) {
+      await showAlert("Tidak dapat menghapus akun", "Akun yang sedang digunakan tidak dapat dihapus.", "warning");
+      return;
+    }
+    if (!(await confirmAction("Hapus akun?", `Akun ${account.username} akan dihapus permanen.`, "Ya, hapus"))) return;
     const { data, error: invokeError } = await supabase.functions.invoke("manage-account", { body: { action: "delete", id: account.id } });
-    if (invokeError || data?.error) setError(data?.error || invokeError.message);
-    else {
+    if (invokeError || data?.error) {
+      const message = data?.error || invokeError.message;
+      setError(message);
+      await showAlert("Akun belum terhapus", `${message}. Periksa deployment Edge Function manage-account.`, "error");
+    } else {
       setNotice("Akun berhasil dihapus.");
       await load();
+      await showAlert("Akun dihapus", `Akun ${account.username} berhasil dihapus.`, "success");
     }
   }
 
   const title = employeeAccounts ? "Akun Pegawai" : "Akun Admin & Dev";
+  const roleLabel = (value) => (value === "bendahara" ? "Keuangan (Bendahara)" : value);
   return (
     <>
       <div className="e-page-header">
@@ -81,10 +93,16 @@ export default function AccountPage({ route, profile }) {
           </h1>
           <p className="e-page-sub">Akun menggunakan Supabase Auth; password tidak disimpan pada tabel profil.</p>
         </div>
-        <button className="e-btn e-btn-primary" onClick={() => setEditing({})}>
-          <i className="bi bi-person-plus-fill" />
-          Tambah Akun
-        </button>
+        <div className="d-flex gap-2">
+          <button className="e-btn e-btn-ghost print-hidden" type="button" onClick={() => window.print()}>
+            <i className="bi bi-printer-fill" />
+            Cetak
+          </button>
+          <button className="e-btn e-btn-primary print-hidden" type="button" onClick={() => setEditing({})}>
+            <i className="bi bi-person-plus-fill" />
+            Tambah Akun
+          </button>
+        </div>
       </div>
       {error && (
         <div className="e-notice danger">
@@ -125,19 +143,31 @@ export default function AccountPage({ route, profile }) {
                   <label className="e-label">Pegawai</label>
                   <select className="e-input" name="pegawai_id" defaultValue={editing.pegawai_id || ""} required>
                     <option value="">Pilih pegawai</option>
+                    {!staff.length && (
+                      <option value="" disabled>
+                        Belum ada data pegawai
+                      </option>
+                    )}
                     {staff.map((person) => (
                       <option value={person.id} key={person.id}>
-                        {person.nama} ({person.nip || "Tanpa NIP"})
+                        {person.nama} ({person.nip || "Tanpa NIP"}) · {person.status_kepegawaian || "Jenis belum ditentukan"}
                       </option>
                     ))}
                   </select>
+                  {!staff.length && (
+                    <small className="text-muted d-block mt-2">
+                      Belum ada data untuk dipilih. <a href="#/pegawai_add">Tambahkan data pegawai</a> terlebih dahulu.
+                    </small>
+                  )}
                 </div>
               ) : (
                 <div className="col-md-6">
                   <label className="e-label">Role</label>
                   <select className="e-input" name="role" defaultValue={editing.role || "admin"}>
                     {(role === "developer" ? ["admin", "developer", "bendahara"] : ["admin"]).map((item) => (
-                      <option key={item}>{item}</option>
+                      <option key={item} value={item}>
+                        {roleLabel(item)}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -179,9 +209,16 @@ export default function AccountPage({ route, profile }) {
                   <td>{account.username}</td>
                   <td>{account.nama_lengkap}</td>
                   <td>
-                    <span className="e-badge indigo">{account.role}</span>
+                    <span className="e-badge indigo">{roleLabel(account.role)}</span>
                   </td>
-                  {employeeAccounts && <td>{staff.find((person) => person.id === account.pegawai_id)?.nama || account.pegawai_id || "—"}</td>}
+                  {employeeAccounts && (
+                    <td>
+                      {(() => {
+                        const person = staff.find((item) => item.id === account.pegawai_id);
+                        return person ? `${person.nama} · ${person.status_kepegawaian || "Jenis belum ditentukan"}` : account.pegawai_id || "—";
+                      })()}
+                    </td>
+                  )}
                   <td>
                     <div className="d-flex gap-2 justify-content-end">
                       <button className="e-act-btn edit" title="Edit" onClick={() => setEditing(account)}>

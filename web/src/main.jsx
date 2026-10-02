@@ -2,6 +2,7 @@ import React from "react";
 import faviconUrl from "../../public/images/favicon.png";
 import { createRoot } from "react-dom/client";
 import "../../public/css/style.css";
+import "sweetalert2/dist/sweetalert2.min.css";
 import "./shell.css";
 import "./features/print.css";
 import App from "./App.jsx";

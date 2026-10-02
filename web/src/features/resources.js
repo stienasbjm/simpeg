@@ -2,6 +2,49 @@ const text = (name, label, extra = {}) => ({ name, label, type: "text", ...extra
 const date = (name, label, extra = {}) => ({ name, label, type: "date", ...extra });
 const money = (name, label) => ({ name, label, type: "number", step: "1000" });
 const file = (name, label) => ({ name, label, type: "file" });
+const rankOptions = [
+  "I/a - Juru Muda",
+  "I/b - Juru Muda Tingkat I",
+  "I/c - Juru",
+  "I/d - Juru Tingkat I",
+  "II/a - Pengatur Muda",
+  "II/b - Pengatur Muda Tingkat I",
+  "II/c - Pengatur",
+  "II/d - Pengatur Tingkat I",
+  "III/a - Penata Muda",
+  "III/b - Penata Muda Tingkat I",
+  "III/c - Penata",
+  "III/d - Penata Tingkat I",
+  "IV/a - Pembina",
+  "IV/b - Pembina Tingkat I",
+  "IV/c - Pembina Utama Muda",
+  "IV/d - Pembina Utama Madya",
+  "IV/e - Pembina Utama",
+  "Non-PNS / Belum Ada",
+];
+
+export const isLecturer = (status) =>
+  String(status || "")
+    .toLowerCase()
+    .startsWith("dosen");
+
+export function retirementAge(employee) {
+  if (employee.status_kepegawaian === "Tenaga Kependidikan") return 58;
+  if (isLecturer(employee.status_kepegawaian)) {
+    const academicRank = String(employee.jabatan_fungsional || "").toLowerCase();
+    return academicRank.includes("profesor") || academicRank.includes("guru besar") ? 70 : 65;
+  }
+  return null;
+}
+
+export function getRetirementDate(employee) {
+  const age = retirementAge(employee);
+  if (!age || !employee.tanggal_lahir) return "";
+  const [year, month, day] = employee.tanggal_lahir.split("-").map(Number);
+  const retirementYear = year + age;
+  const retirementDay = Math.min(day, new Date(retirementYear, month, 0).getDate());
+  return `${retirementYear}-${String(month).padStart(2, "0")}-${String(retirementDay).padStart(2, "0")}`;
+}
 
 export const resources = {
   pegawai: {
@@ -11,26 +54,36 @@ export const resources = {
     color: "purple",
     order: "nama",
     roles: ["admin", "developer"],
-    search: ["nama", "nip", "kepangkatan", "jabatan_fungsional"],
+    search: ["nama", "nip", "status_kepegawaian", "kepangkatan", "pangkat_golongan", "jabatan_fungsional"],
     columns: [
       ["nama", "Nama Pegawai"],
-      ["nip", "NIP"],
-      ["status_kepegawaian", "Status"],
-      ["jabatan_fungsional", "Jabatan Fungsional"],
+      ["nip", "NIP/NIK"],
+      ["status_kepegawaian", "Status Kepegawaian"],
+      ["nidn_nuptk", "NIDN/NUPTK"],
+      ["pangkat_golongan", "Pangkat / Golongan"],
+      ["tmt_pangkat", "TMT Pangkat"],
+      ["masa_pangkat", "Masa Pangkat"],
+      ["jabatan_fungsional", "Jabatan Akademik Dosen"],
+      ["tanggal_masuk_kerja", "Mulai Kerja"],
+      ["masa_kerja", "Masa Kerja"],
+      ["tanggal_pensiun", "Tanggal Pensiun"],
+      ["status_pensiun", "Pemantauan Pensiun"],
     ],
     fields: [
       text("nama", "Nama Lengkap", { required: true }),
-      text("nip", "NIP"),
+      text("nip", "NIP/NIK"),
       text("tempat_lahir", "Tempat Lahir"),
       date("tanggal_lahir", "Tanggal Lahir"),
-      text("kepangkatan", "Kepangkatan"),
+      { name: "status_kepegawaian", label: "Status Kepegawaian", type: "select", options: ["Dosen", "Tenaga Kependidikan"], required: true },
+      text("nidn_nuptk", "NIDN / NUPTK"),
+      { name: "pangkat_golongan", label: "Pangkat / Golongan", type: "select", options: rankOptions },
       date("tmt_pangkat", "TMT Pangkat"),
-      text("jabatan_fungsional", "Jabatan Fungsional"),
+      { name: "jabatan_fungsional", label: "Jabatan Akademik Dosen", type: "select", options: ["Tenaga Pendidik", "Asisten Ahli", "Lektor", "Lektor Kepala", "Guru Besar/Profesor"], required: true },
       date("tmt_jabatan", "TMT Jabatan"),
       { name: "sk_inpassing_2025", label: "SK Inpassing 2025", type: "checkbox" },
-      text("ijazah", "Pendidikan / Ijazah"),
-      text("status_kepegawaian", "Status Kepegawaian", { required: true }),
+      { name: "ijazah", label: "Pendidikan / Ijazah", type: "select", options: ["S2 (Magister)", "S3 (Doktor)"] },
       date("tanggal_masuk_kerja", "Tanggal Masuk Kerja"),
+      { name: "tanggal_pensiun", label: "Perkiraan Tanggal Pensiun", type: "computed-date" },
       file("foto", "Foto Pegawai"),
       file("file_ijazah", "File Ijazah"),
       file("file_kepangkatan", "File Kepangkatan"),
@@ -52,6 +105,7 @@ export const resources = {
       ["tanggal_diterima", "Tanggal Diterima"],
       ["pengirim", "Pengirim"],
       ["perihal", "Perihal"],
+      ["file_url", "Tautan Dokumen"],
     ],
     fields: [
       text("nomor_surat", "Nomor Surat", { required: true }),
@@ -59,7 +113,7 @@ export const resources = {
       date("tanggal_diterima", "Tanggal Diterima", { required: true }),
       text("pengirim", "Pengirim", { required: true }),
       text("perihal", "Perihal", { required: true }),
-      file("file_surat", "File Surat"),
+      text("file_url", "Tautan Dokumen (URL)", { type: "url", placeholder: "https://..." }),
     ],
   },
   surat_keluar: {
@@ -76,13 +130,14 @@ export const resources = {
       ["tanggal_surat", "Tanggal Surat"],
       ["tujuan", "Tujuan"],
       ["perihal", "Perihal"],
+      ["file_url", "Tautan Dokumen"],
     ],
     fields: [
       text("nomor_surat", "Nomor Surat", { required: true }),
       date("tanggal_surat", "Tanggal Surat", { required: true }),
       text("tujuan", "Tujuan", { required: true }),
       text("perihal", "Perihal", { required: true }),
-      file("file_surat", "File Surat"),
+      text("file_url", "Tautan Dokumen (URL)", { type: "url", placeholder: "https://..." }),
     ],
   },
   sk: {
@@ -98,20 +153,27 @@ export const resources = {
       ["nomor_sk", "Nomor SK"],
       ["tanggal_sk", "Tanggal SK"],
       ["tentang", "Tentang"],
+      ["file_url", "Tautan Dokumen"],
     ],
-    fields: [text("nomor_sk", "Nomor SK", { required: true }), date("tanggal_sk", "Tanggal SK", { required: true }), text("tentang", "Tentang", { required: true }), file("file_sk", "File SK")],
+    fields: [
+      text("nomor_sk", "Nomor SK", { required: true }),
+      date("tanggal_sk", "Tanggal SK", { required: true }),
+      text("tentang", "Tentang", { required: true }),
+      text("file_url", "Tautan Dokumen (URL)", { type: "url", placeholder: "https://..." }),
+    ],
   },
   absensi: {
     table: "absensi",
+    select: "*, pegawai(nama, nip)",
     title: "Absensi Pegawai",
     icon: "bi-calendar2-check-fill",
     color: "blue",
     order: "tanggal",
     descending: true,
     roles: ["admin", "developer", "bendahara"],
-    search: ["pegawai_id", "tanggal", "status", "keterangan"],
+    search: ["pegawai_id", "tanggal", "status", "keterangan", "pegawai.nama", "pegawai.nip"],
     columns: [
-      ["pegawai_id", "ID Pegawai"],
+      ["pegawai_id", "Nama Pegawai"],
       ["tanggal", "Tanggal"],
       ["jam_masuk", "Jam Masuk"],
       ["jam_keluar", "Jam Keluar"],
@@ -119,7 +181,7 @@ export const resources = {
       ["keterangan", "Keterangan"],
     ],
     fields: [
-      text("pegawai_id", "ID Pegawai", { required: true }),
+      { name: "pegawai_id", label: "Pegawai", type: "relation", relation: { table: "pegawai", label: "nama", secondary: "nip" }, required: true },
       date("tanggal", "Tanggal", { required: true }),
       { name: "jam_masuk", label: "Jam Masuk", type: "time" },
       { name: "jam_keluar", label: "Jam Keluar", type: "time" },

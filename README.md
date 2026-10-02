@@ -23,7 +23,9 @@ Jalankan script SQL berikut secara berurutan di **Supabase Dashboard > SQL Edito
 1. `supabase/schema.sql` (membuat tabel-tabel utama: pegawai, surat, absensi, kas, gaji, dll.)
 2. `supabase/migrations/202609290001_static_app_security.sql` (membuat tabel profiles, RLS security policies, RPC functions, dan private storage bucket `simpeg-private`)
 3. `supabase/migrations/202609290002_auth_profile_provisioning.sql` (membuat trigger otomatis profil saat user baru mendaftar)
-4. Buat user pertama di **Authentication > Users** (misal: `admin@stienas-ypb.ac.id`), lalu jadikan developer (super-admin) dengan SQL:
+4. `supabase/migrations/202610020003_employee_career_monitoring.sql` (menambahkan tanggal pensiun dan default status dosen)
+5. `supabase/migrations/202610020004_employee_identifiers.sql` (menambahkan kolom NIDN/NUPTK pegawai)
+6. Buat user pertama di **Authentication > Users** (misal: `admin@stienas-ypb.ac.id`), lalu jadikan developer (super-admin) dengan SQL:
    ```sql
    UPDATE public.profiles
    SET role = 'developer'

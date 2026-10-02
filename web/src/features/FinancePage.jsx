@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../supabase.js";
+import { confirmAction, showAlert } from "../alerts.js";
 
 const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 const money = (value) => `Rp ${Number(value || 0).toLocaleString("id-ID")}`;
@@ -161,10 +162,12 @@ function CashPage() {
   }
 
   async function deleteCash(row) {
-    if (row.isPayroll || !window.confirm("Hapus transaksi kas ini?")) return;
+    if (row.isPayroll || !(await confirmAction("Hapus transaksi kas?", "Transaksi ini akan dihapus permanen.", "Ya, hapus"))) return;
     const { error: deleteError } = await supabase.from("kas_transaksi").delete().eq("id", row.id);
-    if (deleteError) setError(deleteError.message);
-    else setRefresh((value) => value + 1);
+    if (deleteError) {
+      setError(deleteError.message);
+      await showAlert("Transaksi gagal dihapus", deleteError.message, "error");
+    } else setRefresh((value) => value + 1);
   }
 
   async function saveSignatories(event) {
@@ -200,11 +203,11 @@ function CashPage() {
         subtitle={`Pencatatan kas kecil & besar periode ${monthNames[period.month - 1]} ${period.year}.`}
         action={
           <div className="d-flex flex-wrap gap-2">
-            <button className="e-btn e-btn-ghost" onClick={() => setShowSignatories(!showSignatories)}>
+            <button className="e-btn e-btn-ghost print-hidden" onClick={() => setShowSignatories(!showSignatories)}>
               <i className="bi bi-pen-fill" />
               Atur Penandatangan
             </button>
-            <button className="e-btn e-btn-primary" onClick={() => setEditing({})}>
+            <button className="e-btn e-btn-primary print-hidden" onClick={() => setEditing({})}>
               <i className="bi bi-plus-lg" />
               Tambah Transaksi Kas
             </button>
@@ -330,7 +333,7 @@ function CashPage() {
             <i className="bi bi-receipt" />
             Riwayat Transaksi Kas <span className="e-badge blue">{visibleRows.length} transaksi</span>
           </div>
-          <div>
+          <div className="print-hidden">
             <label className="e-label">Jenis Kas</label>
             <select className="e-select" value={cashType} onChange={(event) => setCashType(event.target.value)}>
               <option value="">Semua Kas</option>
@@ -338,12 +341,12 @@ function CashPage() {
               <option value="kas_besar">Kas Besar</option>
             </select>
           </div>
-          <div className="e-search">
+          <div className="e-search print-hidden">
             <i className="bi bi-search e-search-icon" />
             <input className="e-input" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Cari transaksi..." />
           </div>
           <button
-            className="e-btn e-btn-ghost"
+            className="e-btn e-btn-ghost print-hidden"
             onClick={() =>
               downloadCsv(`Laporan_Kas_${period.year}-${period.month}.csv`, [
                 ["Tanggal", "Jenis Kas", "Tipe", "Kategori", "Keterangan", "Jumlah"],
@@ -354,7 +357,7 @@ function CashPage() {
             <i className="bi bi-file-earmark-spreadsheet" />
             Export CSV
           </button>
-          <button className="e-btn e-btn-ghost" onClick={() => window.print()}>
+          <button className="e-btn e-btn-ghost print-hidden" onClick={() => window.print()}>
             <i className="bi bi-printer-fill" />
             Cetak
           </button>
@@ -546,10 +549,12 @@ function PayrollPage() {
   }
 
   async function deletePayroll(row) {
-    if (!window.confirm("Hapus data gaji periode ini?")) return;
+    if (!(await confirmAction("Hapus data gaji?", "Data gaji periode ini akan dihapus permanen.", "Ya, hapus"))) return;
     const { error: deleteError } = await supabase.from("gaji").delete().eq("id", row.id);
-    if (deleteError) setError(deleteError.message);
-    else setRefresh((value) => value + 1);
+    if (deleteError) {
+      setError(deleteError.message);
+      await showAlert("Data gaji gagal dihapus", deleteError.message, "error");
+    } else setRefresh((value) => value + 1);
   }
 
   const payrollByStaff = new Map(payroll.map((row) => [row.pegawai_id, row]));
@@ -564,10 +569,16 @@ function PayrollPage() {
         icon="bi-cash-stack"
         subtitle={`Kelola gaji pegawai periode ${monthNames[period.month - 1]} ${period.year}.`}
         action={
-          <button className="e-btn e-btn-ghost" onClick={() => (window.location.hash = `/slip_gaji_print?all=1&bulan=${period.month}&tahun=${period.year}`)}>
-            <i className="bi bi-printer-fill" />
-            Cetak Semua Slip
-          </button>
+          <div className="d-flex flex-wrap gap-2">
+            <button className="e-btn e-btn-ghost print-hidden" onClick={() => window.print()}>
+              <i className="bi bi-printer-fill" />
+              Cetak Daftar
+            </button>
+            <button className="e-btn e-btn-ghost print-hidden" onClick={() => (window.location.hash = `/slip_gaji_print?all=1&bulan=${period.month}&tahun=${period.year}`)}>
+              <i className="bi bi-printer-fill" />
+              Cetak Semua Slip
+            </button>
+          </div>
         }
       />
       {error && (
@@ -578,7 +589,7 @@ function PayrollPage() {
       )}
       <div className="e-card mb-3">
         <div className="e-card-body d-flex align-items-end flex-wrap gap-3">
-          <div>
+          <div className="print-hidden">
             <label className="e-label">Bulan</label>
             <select className="e-select" value={period.month} onChange={(event) => setPeriod({ ...period, month: Number(event.target.value) })}>
               {monthNames.map((month, index) => (
@@ -588,7 +599,7 @@ function PayrollPage() {
               ))}
             </select>
           </div>
-          <div>
+          <div className="print-hidden">
             <label className="e-label">Tahun</label>
             <input className="e-input" type="number" value={period.year} onChange={(event) => setPeriod({ ...period, year: Number(event.target.value) })} />
           </div>

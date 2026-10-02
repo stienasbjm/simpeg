@@ -42,17 +42,20 @@ Deno.serve(async (request) => {
         user_metadata: { username: input.username },
       });
       if (authError || !authData.user) throw authError || new Error("Gagal membuat user Auth.");
-      const { error: insertError } = await adminClient.from("profiles").insert({
-        id: authData.user.id,
-        email: input.email,
-        username: input.username,
-        nama_lengkap: input.nama_lengkap,
-        role: input.role,
-        pegawai_id: input.role === "pegawai" ? input.pegawai_id : null,
-      });
-      if (insertError) {
+      const { error: profileError } = await adminClient.from("profiles").upsert(
+        {
+          id: authData.user.id,
+          email: input.email,
+          username: input.username,
+          nama_lengkap: input.nama_lengkap,
+          role: input.role,
+          pegawai_id: input.role === "pegawai" ? input.pegawai_id : null,
+        },
+        { onConflict: "id" },
+      );
+      if (profileError) {
         await adminClient.auth.admin.deleteUser(authData.user.id);
-        throw insertError;
+        throw profileError;
       }
       return Response.json({ id: authData.user.id }, { headers: corsHeaders });
     }
