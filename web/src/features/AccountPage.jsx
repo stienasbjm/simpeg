@@ -46,8 +46,9 @@ export default function AccountPage({ route, profile }) {
     setBusy(true);
     setError("");
     const form = new FormData(event.currentTarget);
+    const isEditing = Boolean(editing?.id);
     const input = {
-      action: editing ? "update" : "create",
+      action: isEditing ? "update" : "create",
       id: editing?.id,
       email: form.get("email"),
       username: form.get("username"),
@@ -64,7 +65,7 @@ export default function AccountPage({ route, profile }) {
       await showAlert("Akun gagal disimpan", message, "error");
       return;
     }
-    setNotice(editing ? "Akun berhasil diperbarui." : "Akun berhasil dibuat.");
+    setNotice(isEditing ? "Akun berhasil diperbarui." : "Akun berhasil dibuat.");
     setEditing(null);
     await load();
   }
