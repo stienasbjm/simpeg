@@ -24,6 +24,7 @@ export default function AccountPage({ route, profile }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const role = profile.role;
+  const canManageAccounts = employeeAccounts ? ["admin", "developer"].includes(role) : role === "developer";
 
   async function load() {
     const [accountsResult, staffResult] = await Promise.all([
@@ -37,8 +38,8 @@ export default function AccountPage({ route, profile }) {
   }
 
   useEffect(() => {
-    load();
-  }, [route]);
+    if (canManageAccounts) load();
+  }, [route, canManageAccounts]);
 
   async function save(event) {
     event.preventDefault();
@@ -88,6 +89,15 @@ export default function AccountPage({ route, profile }) {
 
   const title = employeeAccounts ? "Akun Pegawai" : "Akun Admin & Dev";
   const roleLabel = (value) => (value === "bendahara" ? "Keuangan (Bendahara)" : value);
+  if (!canManageAccounts) {
+    return (
+      <div className="e-notice danger">
+        <i className="bi bi-exclamation-triangle-fill" />
+        Anda tidak memiliki akses untuk mengelola akun pada halaman ini.
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="e-page-header">

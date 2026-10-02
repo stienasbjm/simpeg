@@ -61,7 +61,10 @@ Deno.serve(async (request) => {
     }
 
     if (input.action === "update") {
-      if (!input.id || !allowedRoles.includes(input.role)) return Response.json({ error: "Data akun tidak valid." }, { status: 400, headers: corsHeaders });
+      if (!input.id) return Response.json({ error: "ID akun tidak ditemukan." }, { status: 400, headers: corsHeaders });
+      if (!allowedRoles.includes(input.role)) {
+        return Response.json({ error: "Role akun tidak diizinkan untuk dikelola oleh akun Anda." }, { status: 403, headers: corsHeaders });
+      }
       const { data: target, error: targetError } = await adminClient.from("profiles").select("role").eq("id", input.id).single();
       if (targetError || !target || (callerProfile.role !== "developer" && target.role !== "pegawai")) {
         return Response.json({ error: "Tidak boleh mengubah akun ini." }, { status: 403, headers: corsHeaders });
