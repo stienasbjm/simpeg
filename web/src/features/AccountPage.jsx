@@ -2,6 +2,19 @@ import { useEffect, useState } from "react";
 import { supabase } from "../supabase.js";
 import { confirmAction, showAlert } from "../alerts.js";
 
+async function getFunctionErrorMessage(error, data) {
+  if (data?.error) return data.error;
+  if (error?.context instanceof Response) {
+    try {
+      const body = await error.context.clone().json();
+      if (body?.error) return body.error;
+    } catch {
+      // Use the SDK message when the response body is not JSON.
+    }
+  }
+  return error?.message || "Operasi akun gagal.";
+}
+
 export default function AccountPage({ route, profile }) {
   const employeeAccounts = route === "akun_pegawai";
   const [accounts, setAccounts] = useState([]);
@@ -45,9 +58,9 @@ export default function AccountPage({ route, profile }) {
     const { data, error: invokeError } = await supabase.functions.invoke("manage-account", { body: input });
     setBusy(false);
     if (invokeError || data?.error) {
-      const message = data?.error || invokeError.message;
+      const message = await getFunctionErrorMessage(invokeError, data);
       setError(message);
-      await showAlert("Akun gagal disimpan", `${message}. Pastikan Edge Function manage-account telah di-deploy.`, "error");
+      await showAlert("Akun gagal disimpan", message, "error");
       return;
     }
     setNotice(editing ? "Akun berhasil diperbarui." : "Akun berhasil dibuat.");
@@ -63,9 +76,9 @@ export default function AccountPage({ route, profile }) {
     if (!(await confirmAction("Hapus akun?", `Akun ${account.username} akan dihapus permanen.`, "Ya, hapus"))) return;
     const { data, error: invokeError } = await supabase.functions.invoke("manage-account", { body: { action: "delete", id: account.id } });
     if (invokeError || data?.error) {
-      const message = data?.error || invokeError.message;
+      const message = await getFunctionErrorMessage(invokeError, data);
       setError(message);
-      await showAlert("Akun belum terhapus", `${message}. Periksa deployment Edge Function manage-account.`, "error");
+      await showAlert("Akun belum terhapus", message, "error");
     } else {
       setNotice("Akun berhasil dihapus.");
       await load();
@@ -126,19 +139,7 @@ export default function AccountPage({ route, profile }) {
           </div>
           <div className="e-card-body">
             <div className="row g-3">
-              <div className="col-md-6">
-                <label className="e-label">Username</label>
-                <input className="e-input" name="username" defaultValue={editing.username || ""} required />
-              </div>
-              <div className="col-md-6">
-                <label className="e-label">Email Auth</label>
-                <input className="e-input" name="email" type="email" defaultValue={editing.email || ""} required />
-              </div>
-              <div className="col-md-6">
-                <label className="e-label">Nama Lengkap</label>
-                <input className="e-input" name="nama_lengkap" defaultValue={editing.nama_lengkap || ""} required />
-              </div>
-              {employeeAccounts ? (
+              {employeeAccounts && (
                 <div className="col-md-6">
                   <label className="e-label">Pegawai</label>
                   <select className="e-input" name="pegawai_id" defaultValue={editing.pegawai_id || ""} required>
@@ -160,7 +161,20 @@ export default function AccountPage({ route, profile }) {
                     </small>
                   )}
                 </div>
-              ) : (
+              )}
+              <div className="col-md-6">
+                <label className="e-label">Username</label>
+                <input className="e-input" name="username" defaultValue={editing.username || ""} required />
+              </div>
+              <div className="col-md-6">
+                <label className="e-label">Email Auth</label>
+                <input className="e-input" name="email" type="email" defaultValue={editing.email || ""} required />
+              </div>
+              <div className="col-md-6">
+                <label className="e-label">Nama Lengkap</label>
+                <input className="e-input" name="nama_lengkap" defaultValue={editing.nama_lengkap || ""} required />
+              </div>
+              {!employeeAccounts && (
                 <div className="col-md-6">
                   <label className="e-label">Role</label>
                   <select className="e-input" name="role" defaultValue={editing.role || "admin"}>
